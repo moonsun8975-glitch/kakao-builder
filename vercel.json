@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "remove-bg.js": { "maxDuration": 30 }
-  },
+  "builds": [
+    { "src": "remove-bg.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
   "routes": [
     { "src": "/api/remove-bg", "dest": "/remove-bg.js" },
     { "src": "/(.*)", "dest": "/index.html" }
