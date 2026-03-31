@@ -1,11 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { "src": "remove-bg.js", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" }
+    { "src": "api/remove-bg.js", "use": "@vercel/node" },
+    { "src": "public/index.html", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/remove-bg", "dest": "/remove-bg.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/api/remove-bg", "dest": "/api/remove-bg.js" },
+    { "src": "/(.*)", "dest": "/public/index.html" }
   ]
 }
