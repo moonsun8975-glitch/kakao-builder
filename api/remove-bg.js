@@ -6,8 +6,9 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = req.headers['x-api-key'];
-  if (!apiKey) return res.status(400).json({ error: 'API key required' });
+  // 서버 환경변수에서 API 키 사용 (사용자에게 노출되지 않음)
+  const apiKey = process.env.REMOVE_BG_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'API key not configured on server' });
 
   try {
     const chunks = [];
