@@ -1,6 +1,3 @@
 {
-  "outputDirectory": "public",
-  "functions": {
-    "api/remove-bg.js": { "maxDuration": 30 }
-  }
+  "outputDirectory": "public"
 }
