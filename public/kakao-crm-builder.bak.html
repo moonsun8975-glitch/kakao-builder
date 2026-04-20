@@ -79,6 +79,8 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .card-item.selected .card-actions button:hover { background: rgba(255,255,255,0.9); }
 .add-card-btn { margin: 6px 8px 8px; padding: 8px; border: 1px dashed var(--border-strong); border-radius: 8px; background: none; cursor: pointer; font-family: var(--font); font-size: 12px; color: var(--text-sub); width: calc(100% - 16px); text-align: center; transition: all 0.12s; }
 .add-card-btn:hover { border-color: var(--y300); color: #8B7700; background: #FFFCE0; }
+.add-card-btn:disabled{background:#E0E0DE;color:#A8A8A4;cursor:not-allowed;opacity:0.7;border-style:solid;}
+.add-card-btn:disabled:hover{background:#E0E0DE;color:#A8A8A4;}
 .csv-wrap { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .csv-btn { width: 100%; padding: 7px; border: 1px solid var(--border-strong); border-radius: 7px; background: none; font-family: var(--font); font-size: 11px; color: var(--text-sub); cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.12s; position: relative; }
 .csv-btn:hover { background: var(--bg); color: var(--text); }
@@ -216,7 +218,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
         <span class="card-count" id="cardCount">0장</span>
       </div>
       <div class="sidebar-body" id="cardList"></div>
-      <button class="add-card-btn" onclick="openModal()">+ 카드 추가</button>
+      <button class="add-card-btn" id="addCardBtn" onclick="openModal()">+ 카드 추가</button>
       <div class="csv-wrap">
         <label class="csv-btn">
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7.5h6M4 10h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
@@ -274,12 +276,13 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 </div>
 
 <script>
+const MAX_CARDS=10;
 const DEFAULT_GRAD_COLOR='#FFFFFF';
 const DEFAULT_BTN_COLOR='#00A1FF';
 const TEMPLATES=[
   {id:'A',name:'브랜드형',desc:'브랜드이미지+혜택+버튼',type:'cover',customEditor:true,def:{imageType:'연출컷',benefitCount:'2개',sub:'프리미엄 컬렉션',headline:'최대 56%',headline2:'할인',benefit1Label:'혜택 1',benefit1Value:'무료배송',benefit2Label:'혜택 2',benefit2Value:'쿠폰 증정',benefit3Label:'혜택 3',benefit3Value:'단독 할인',btnText:'할인받고 구매하기',bgColor:'#1A1A18',btnColor:'#2f8de2',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false,_gradColor:'',_autoGradColor:'',_btnColorAuto:true}},
   {id:'B',name:'가격강조형',desc:'제품이미지+가격+버튼',type:'cover',customEditor:true,def:{headline:'반값딜 알림 도착',showDate:'off',date:'8/22(금)',time:'오전 9시',product1Date:'8/22(금)',product1Time:'오전 9시',product2Date:'8/22(금)',product2Time:'오전 9시',productCount:'1개',product1Brand:'브랜드명',product1Name:'제품명',product1Rate:'50%',product1Price:'20,000원',product1Orig:'40,000원',product2Brand:'브랜드명',product2Name:'제품명',product2Rate:'50%',product2Price:'20,000원',product2Orig:'40,000원',btnText:'반값딜 입장하기',btnColor:'#00A1FF',bgColor:'#f5f5f5',_img:'',_img2:'',_imgX:0,_imgY:0,_imgScale:1,_img2X:0,_img2Y:0,_img2Scale:1,_imgEditing:false,_img2Editing:false,_btnColorAuto:false}},
-  {id:'C',name:'혜택형',desc:'상단띠배너+배지',type:'inner',customEditor:true,def:{bannerType:'브랜드형',bannerText:'브랜드명',bannerColor:'#184180',tab1:'스페셜딜',tab2:'특가더보기',tab3:'라이브',tab4:'오마트',tab5:'콜라보마켓',badge1Type:'즉시할인',badge1Rate:'57%',badge2Type:'상품쿠폰',badge2Rate:'15%',badge3Type:'결제사_카카오페이',badge3Rate:'7%',badgeCount:'3개',badge1Line1:'혜택1',badge1Line2:'',badge2Line1:'혜택2',badge2Line2:'',badge3Line1:'혜택3',badge3Line2:'',showNotice:'on',_img:'',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false}},
+  {id:'C',name:'혜택형',desc:'상단띠배너+배지',type:'inner',customEditor:true,def:{bannerType:'브랜드형',bannerText:'브랜드명',bannerColor:'#00A1FF',tab1:'스페셜딜',tab2:'특가더보기',tab3:'라이브',tab4:'오마트',tab5:'콜라보마켓',badge1Type:'즉시할인',badge1Rate:'57%',badge2Type:'상품쿠폰',badge2Rate:'15%',badge3Type:'결제사_카카오페이',badge3Rate:'7%',badgeCount:'3개',badge1Line1:'혜택1',badge1Line2:'',badge2Line1:'혜택2',badge2Line2:'',badge3Line1:'혜택3',badge3Line2:'',showNotice:'on',_img:'',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false}},
   {id:'D',name:'제품리스트형',desc:'상단띠배너+제품정보',type:'inner',fields:['brand','productName','discountRate','salePrice','originalPrice','noticeText','btnText','bgColor'],def:{brand:'리바트',productName:'사선 컷팅 테이프 크리너 9종',discountRate:'56%',salePrice:'24,900원',originalPrice:'46,800원',noticeText:'일부 상품은 쿠폰 적용이 제한될 수 있습니다.',btnText:'지금 구매하기',bgColor:'#FFFFFF'}},
   {id:'E',name:'쿠폰형',desc:'쿠폰 최대 3개',type:'inner',fields:['headline','coupon1Name','coupon1Value','coupon1Detail','noticeText'],def:{headline:'다운로드 쿠폰',coupon1Name:'라이브 단 하루 25% 쿠폰',coupon1Value:'25%',coupon1Detail:'최소 50,000원 이상 구매 시 사용 가능',noticeText:'쿠폰 다운로드 기간: 오늘 00시~내일 00시'}},
   {id:'F',name:'쿠폰형',desc:'쿠폰 최대 3개',type:'inner',fields:['headline','coupon1Name','coupon1Value','coupon2Name','coupon2Value','noticeText'],def:{headline:'중복 사용 가능',coupon1Name:'신규 회원 10% 쿠폰',coupon1Value:'10%',coupon2Name:'브랜드 단독 15% 쿠폰',coupon2Value:'15%',noticeText:'쿠폰 중복 사용 가능'}},
@@ -314,9 +317,13 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 function closeModalBg(e){if(e.target===e.currentTarget)closeModal();}
 function addCard(){
   if(!selTmpl){alert('템플릿을 선택해주세요.');return;}
+  if(cards.length>=MAX_CARDS){alert(`카드는 최대 ${MAX_CARDS}장까지 추가할 수 있어요.`);return;}
   const t=TEMPLATES.find(t=>t.id===selTmpl);
-  const newCard={id:++uid,templateId:t.id,type:t.type,data:{...t.def}};
+  // 삽입 위치: 선택된 카드 바로 아래 (섹션 무관). 선택 없으면 맨 뒤.
   const insertIdx=selectedIdx>=0?selectedIdx+1:cards.length;
+  // 새 카드의 type은 삽입 위치 앞 카드의 type을 따라감
+  const newType=(insertIdx>0&&cards[insertIdx-1])?cards[insertIdx-1].type:t.type;
+  const newCard={id:++uid,templateId:t.id,type:newType,data:{...t.def}};
   cards.splice(insertIdx,0,newCard);
   closeModal();renderAll();selectCard(insertIdx);
 }
@@ -473,6 +480,17 @@ function renderSidebar(){
     });
     el.appendChild(secDiv);
   });
+  // + 카드 추가 버튼 활성화/비활성화 (MAX_CARDS 초과 방지)
+  const addBtn=document.getElementById('addCardBtn');
+  if(addBtn){
+    if(cards.length>=MAX_CARDS){
+      addBtn.disabled=true;
+      addBtn.textContent=`+ 카드 추가 (최대 ${MAX_CARDS}장)`;
+    }else{
+      addBtn.disabled=false;
+      addBtn.textContent='+ 카드 추가';
+    }
+  }
 }
 function renderEditor(){
   if(selectedIdx<0||selectedIdx>=cards.length)return;
@@ -498,6 +516,29 @@ function renderEditor(){
   body.appendChild(imgDiv);
 }
 
+/* A 이미지 타입 전환 시 컬러 재계산 (자동 모드에서만) */
+function _switchImageTypeA(d,newType){
+  if(newType==='연출컷'){
+    if(d._gradColorAuto!==false){
+      d._gradColor=d._autoGradColor||'';
+      d._gradColorAuto=true;
+    }
+    if(d._btnColorAuto!==false){
+      d.btnColor=d._autoBtnBaseColor?calcBtnColor(d._autoBtnBaseColor):(d.btnColor||'#2f8de2');
+      d._btnColorAuto=true;
+    }
+    // 연출컷은 전체 배경이 이미지로 덮이므로 bgColor는 의미 없음 — 수동 설정 유지
+  }else{
+    if(d._bgColorAuto!==false){
+      d.bgColor=d._autoBgColor||d.bgColor||'#ffffff';
+      d._bgColorAuto=true;
+    }
+    if(d._btnColorAuto!==false){
+      d.btnColor=d._autoBtnBaseColor?calcBtnColor(d._autoBtnBaseColor):(d.btnColor||'#2f8de2');
+      d._btnColorAuto=true;
+    }
+  }
+}
 /* ── 브랜드형(A) 전용 에디터 ── */
 function renderEditorA(card,body){
   const d=card.data;const bc=d.benefitCount||'2개';
@@ -511,7 +552,7 @@ function renderEditorA(card,body){
     return`${labelRow}<div style="display:flex;align-items:center;cursor:pointer;" onclick="toggleIro('${pid}','${key}')"><div class="iro-dot" data-iro="${pid}" style="width:20px;height:20px;border-radius:50%;border:1px solid #ddd;background:${val};flex-shrink:0;margin-right:8px;"></div><span style="font-size:12px;color:var(--text-sub);margin-right:4px;">#</span><input class="iro-hex" data-iro="${pid}" type="text" value="${esc(hex)}" maxlength="6" style="width:58px;font-family:monospace;font-size:11px;padding:4px 6px;margin-right:8px;" onclick="event.stopPropagation()" oninput="onIroHex('${key}','${pid}',this)">${autoBtn}</div><div id="${pid}" data-ed-type="${edType}" data-key="${key}" style="display:none;margin-top:8px;background:white;border:1px solid var(--border);border-radius:8px;padding:12px;"><div class="iro-picker-wrap" id="${pid}_iro"></div><div class="iro-slider-row" id="${pid}_row"><button class="iro-ed-btn" onclick="event.stopPropagation();startEyedropper('${edType}','${key}','${pid}')" title="이미지에서 컬러 추출"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22l4.5-4.5M20.5 3.5a2.121 2.121 0 0 0-3 0L4 17l3 3L20.5 6.5a2.121 2.121 0 0 0 0-3z"/></svg></button><button onclick="event.stopPropagation();document.getElementById('${pid}').style.display='none';" style="margin-left:auto;font-size:11px;font-family:var(--font);padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#2D6EE8;color:white;font-weight:600;">완료</button></div></div>${hint}`;};
 
   // 이미지 타입
-  mk(`<label>이미지 타입</label><select onchange="updateField('imageType',this.value);const _d=cards[selectedIdx].data;if(this.value==='연출컷'){_d._gradColor=_d._autoGradColor||'';_d._gradColorAuto=true;_d.btnColor=_d._autoBtnBaseColor?calcBtnColor(_d._autoBtnBaseColor):'#2f8de2';_d._btnColorAuto=true;_d.bgColor='#1A1A18';}else{_d.bgColor=_d._autoBgColor||'#ffffff';_d._bgColorAuto=true;_d.btnColor=_d._autoBtnBaseColor?calcBtnColor(_d._autoBtnBaseColor):'#2f8de2';_d._btnColorAuto=true;}renderPreview();renderEditor()"><option value="연출컷"${d.imageType==='연출컷'?' selected':''}>연출컷</option><option value="누끼컷"${d.imageType==='누끼컷'?' selected':''}>누끼컷</option></select>`);
+  mk(`<label>이미지 타입</label><select onchange="_switchImageTypeA(cards[selectedIdx].data,this.value);updateField('imageType',this.value);renderEditor()"><option value="연출컷"${d.imageType==='연출컷'?' selected':''}>연출컷</option><option value="누끼컷"${d.imageType==='누끼컷'?' selected':''}>누끼컷</option></select>`);
   mk(ci('서브텍스트','sub',16,''));
   mk(ci('메인텍스트 1줄','headline',10,''));
   mk(ci('메인텍스트 2줄','headline2',10,'2줄 입력 시 작성'));
@@ -613,6 +654,22 @@ function renderEditorB(card,body){
   mk(ci('버튼 텍스트','btnText',15,''));
   mk(ci('버튼 컬러(hex)','btnColor',7,'#00A1FF'));
 }
+/* 배지 개수 변경 시 현재 배지 타입이 새 규칙에 맞는지 검증 후 보정 */
+function _syncBadgeTypes(d,newCount){
+  const bc=newCount==='없음'?0:parseInt(newCount);
+  const noPay=['즉시할인','상품쿠폰','장바구니','무료배송','사용자기재'];
+  const pay=['결제사_카카오페이','결제사_네이버페이','결제사_토스페이','결제사_오늘의집페이'];
+  const all=[...noPay,...pay];
+  for(let i=1;i<=bc;i++){
+    const key='badge'+i+'Type';
+    const cur=d[key]||'즉시할인';
+    let avail;
+    if(bc===1)avail=all;
+    else if(bc===2)avail=i===1?noPay:all;
+    else avail=i<=2?noPay:pay;
+    if(!avail.includes(cur))d[key]=avail[0];
+  }
+}
 function renderEditorC(card,body){
   const d=card.data;const cid=card.id;
   const mk=(html)=>{const div=document.createElement('div');div.className='field';div.innerHTML=html;body.appendChild(div);return div;};
@@ -638,7 +695,7 @@ function renderEditorC(card,body){
     for(let i=1;i<=5;i++)mk(ci(`탭 ${i}`,`tab${i}`,5,`탭${i}`));
   }
   // 배지 개수
-  mk(`<label>배지 개수</label><select onchange="updateField('badgeCount',this.value);renderEditor()"><option value="1개"${d.badgeCount==='1개'?' selected':''}>1개</option><option value="2개"${d.badgeCount==='2개'?' selected':''}>2개</option><option value="3개"${d.badgeCount==='3개'?' selected':''}>3개</option><option value="없음"${d.badgeCount==='없음'?' selected':''}>없음</option></select>`);
+  mk(`<label>배지 개수</label><select onchange="_syncBadgeTypes(cards[selectedIdx].data,this.value);updateField('badgeCount',this.value);renderEditor()"><option value="1개"${d.badgeCount==='1개'?' selected':''}>1개</option><option value="2개"${d.badgeCount==='2개'?' selected':''}>2개</option><option value="3개"${d.badgeCount==='3개'?' selected':''}>3개</option><option value="없음"${d.badgeCount==='없음'?' selected':''}>없음</option></select>`);
   const bc=d.badgeCount==='없음'?0:parseInt(d.badgeCount||'3');
   const noPayTypes=['즉시할인','상품쿠폰','장바구니','무료배송','사용자기재'];
   const payTypes=['결제사_카카오페이','결제사_네이버페이','결제사_토스페이','결제사_오늘의집페이'];
@@ -652,7 +709,7 @@ function renderEditorC(card,body){
     const rateKey=`badge${i}Rate`;const line1Key=`badge${i}Line1`;const line2Key=`badge${i}Line2`;
     const showRate=bType!=='무료배송'&&bType!=='사용자기재';
     const showCustom=bType==='사용자기재';
-    mk(`<label>배지 ${i}</label><div style="display:flex;gap:8px;align-items:center;"><select style="flex:1;" onchange="updateField('badge${i}Type',this.value);renderEditor()">${availTypes.map(t=>`<option value="${t}"${bType===t?' selected':''}>${t}</option>`).join('')}</select>${showRate?`<div style="position:relative;display:flex;align-items:center;width:90px;flex-shrink:0;"><input type="text" value="${esc((d[rateKey]||'').replace('%','').slice(0,4))}" maxlength="4" placeholder="57" style="width:100%;padding-right:20px;text-align:right;" oninput="this.value=this.value.replace(/[^0-9]/g,'');updateField('${rateKey}',this.value+'%')"><span style="position:absolute;right:10px;font-size:12px;color:var(--text-sub);">%</span></div>`:''}</div>${showCustom?`<div style="display:flex;gap:8px;margin-top:6px;"><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line1Key]||'')}" maxlength="5" placeholder="1줄" oninput="updateField('${line1Key}',this.value)"></div><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line2Key]||'')}" maxlength="5" placeholder="2줄" oninput="updateField('${line2Key}',this.value)"></div></div>`:''}`);
+    mk(`<label>배지 ${i}</label><div style="display:flex;gap:8px;align-items:center;"><select style="flex:1;" onchange="updateField('badge${i}Type',this.value);renderEditor()">${availTypes.map(t=>`<option value="${t}"${bType===t?' selected':''}>${t}</option>`).join('')}</select>${showRate?`<div style="position:relative;display:flex;align-items:center;width:90px;flex-shrink:0;"><input type="text" value="${esc((d[rateKey]||'').replace('%','').slice(0,3))}" maxlength="3" placeholder="57" style="width:100%;padding-right:20px;text-align:right;" oninput="this.value=this.value.replace(/[^0-9]/g,'');updateField('${rateKey}',this.value+'%')"><span style="position:absolute;right:10px;font-size:12px;color:var(--text-sub);">%</span></div>`:''}</div>${showCustom?`<div style="display:flex;gap:8px;margin-top:6px;"><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line1Key]||'')}" maxlength="5" placeholder="1줄" oninput="updateField('${line1Key}',this.value)"></div><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line2Key]||'')}" maxlength="5" placeholder="2줄" oninput="updateField('${line2Key}',this.value)"></div></div>`:''}`);
   }
   // 하단 유의사항
   mk(`<label>하단 유의사항</label><select onchange="updateField('showNotice',this.value);renderPreview()"><option value="on"${d.showNotice==='on'?' selected':''}>표시</option><option value="off"${d.showNotice==='off'?' selected':''}>미표시</option></select>`);
@@ -741,8 +798,11 @@ function handleImgFileB(e,cid,num){
     const boxId=num===1?'imgBoxB_'+cid:'imgBox2B_'+cid;
     showNukkiLoading(boxId);
     removeBackground(ev.target.result,false,result=>{
-      hideNukkiLoading(cid);
+      hideNukkiLoading(boxId);
       const finalImg=result||ev.target.result;card.data[key]=finalImg;
+      if(!result){
+        alert('누끼 처리에 실패했습니다. 원본 이미지를 사용합니다.\n가격강조형은 누끼 이미지가 권장되므로, 다시 시도하거나 누끼 처리된 이미지를 직접 업로드해주세요.');
+      }
       const thumbId=num===1?'imgThumbB_'+cid:'imgThumb2B_'+cid;
       const emptyId=num===1?'imgEmptyB_'+cid:'imgEmpty2B_'+cid;
       const thumb=document.getElementById(thumbId);const empty=document.getElementById(emptyId);
@@ -1083,12 +1143,22 @@ function handleImgFile(e,cid){
     if(d.imageType==='누끼컷'){
       const origImg=origSrc;
       d._img=origSrc;
+      // 누끼 처리 상태 관리: extract(renderEditor 트리거) 완료 후 로더 표시
+      let _nukkiDone=false;
       _applyImgAndExtract(d,()=>{
-        showNukkiLoading('imgBox_'+cid);
+        // extract 완료 후 renderEditor가 끝나서 DOM이 안정화된 시점
+        if(!_nukkiDone){
+          showNukkiLoading('imgBox_'+cid);
+        }
       });
       removeBackground(origImg,false,result=>{
+        _nukkiDone=true;
         hideNukkiLoading('imgBox_'+cid);
-        if(result)d._img=result;
+        if(result){
+          d._img=result;
+        }else{
+          alert('누끼 처리에 실패했습니다. 원본 이미지를 사용합니다.\n(remove.bg API 오류 가능성)');
+        }
         renderPreview();renderEditor();
       });
     }else{
@@ -1473,7 +1543,7 @@ function cardHTML(card){
       const dateRow=showDate?`<div style="display:flex;justify-content:space-between;font-size:26px;color:#5f5f5f;font-weight:500;padding:0 2px;flex-shrink:0;"><span>${d.date||''}</span><span>${d.time||''}</span></div>`:'';
       if(!is2){
         return`<div style="width:750px;height:1000px;background:#f5f5f5;position:relative;overflow:hidden;font-family:'Pretendard',sans-serif;"><div style="position:absolute;top:0;left:0;width:750px;padding-top:80px;padding-left:60px;padding-right:60px;text-align:center;z-index:2;"><div style="font-size:70px;font-weight:700;color:#111;line-height:70px;letter-spacing:-1.4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.headline||''}</div></div><div style="position:absolute;top:190px;left:40px;right:40px;bottom:162px;background:white;border-radius:20px;overflow:hidden;z-index:1;">${showDate?`<div style="position:absolute;top:24px;left:24px;right:24px;display:flex;justify-content:space-between;font-size:26px;color:#5f5f5f;font-weight:400;z-index:2;"><span>${d.date||''}</span><span>${d.time||''}</span></div>`:''}<div style="position:absolute;top:${showDate?70:20}px;left:20px;right:20px;bottom:186px;overflow:hidden;background:#f5f5f5;border-radius:20px;">${imgTag1}</div><div style="position:absolute;bottom:28px;left:24px;right:24px;display:flex;flex-direction:column;gap:12px;"><div style="display:flex;flex-direction:column;gap:4px;"><div style="font-size:30px;font-weight:500;color:#111;">${d.product1Brand||''}</div><div style="font-size:30px;font-weight:400;color:#5f5f5f;">${d.product1Name||''}</div></div><div style="display:flex;align-items:baseline;gap:10px;">${d.product1Rate?`<span style="font-size:40px;font-weight:600;color:#ef3c2c;">${d.product1Rate}</span>`:''}<span style="font-size:40px;font-weight:600;color:#111;">${d.product1Price||''}</span>${d.product1Orig?`<span style="font-size:30px;font-weight:400;color:#cfcfcf;text-decoration:line-through;">${d.product1Orig}</span>`:''}</div></div></div><div style="position:absolute;bottom:40px;left:40px;right:40px;height:100px;background:${d.btnColor||'#00A1FF'};border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:600;color:white;letter-spacing:-0.36px;z-index:2;">${d.btnText||'구매하기'}</div></div>`;
-      }else{const mkCard2=(imgTag,brand,name,rate,price,orig,sdt,date,time)=>`<div style="background:white;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:hidden;">${sdt?`<div style="display:flex;justify-content:space-between;font-size:26px;color:#5f5f5f;font-weight:400;padding:0 2px;flex-shrink:0;">${date||''}<span>${time||''}</span></div><div style="height:1px;background:#f0f0f0;margin:0 2px;flex-shrink:0;"></div>`:''}<div style="display:flex;gap:20px;align-items:stretch;position:relative;flex:1;min-height:0;"><div style="width:240px;border-radius:20px;overflow:hidden;background:#f5f5f5;position:relative;flex-shrink:0;">${imgTag}</div>${rate?`<div style="position:absolute;top:0;left:19px;background:#ef3c2c;color:white;padding:10px 10px 10px 12px;border-radius:0 0 10px 10px;display:flex;align-items:flex-end;gap:0;"><span style="font-size:30px;font-weight:600;line-height:30px;">${rate.replace('%','')}</span><span style="font-size:22px;font-weight:600;line-height:26px;">%</span></div>`:''}<div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:10px 0 14px 0;"><div style="display:flex;flex-direction:column;gap:4px;"><div style="font-size:30px;font-weight:500;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${brand||''}</div><div style="font-size:30px;font-weight:400;color:#5f5f5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name||''}</div></div><div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;"><span style="font-size:40px;font-weight:600;color:#111;">${price||''}</span>${orig?`<span style="font-size:30px;font-weight:400;color:#cfcfcf;text-decoration:line-through;">${orig}</span>`:''}</div></div></div></div>`;
+      }else{const mkCard2=(imgTag,brand,name,rate,price,orig,sdt,date,time)=>`<div style="background:white;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:hidden;">${sdt?`<div style="display:flex;justify-content:space-between;font-size:26px;color:#5f5f5f;font-weight:400;padding:0 2px;flex-shrink:0;"><span>${date||''}</span><span>${time||''}</span></div><div style="height:1px;background:#f0f0f0;margin:0 2px;flex-shrink:0;"></div>`:''}<div style="display:flex;gap:20px;align-items:stretch;position:relative;flex:1;min-height:0;"><div style="width:240px;border-radius:20px;overflow:hidden;background:#f5f5f5;position:relative;flex-shrink:0;">${imgTag}</div>${rate?`<div style="position:absolute;top:0;left:19px;background:#ef3c2c;color:white;padding:10px 10px 10px 12px;border-radius:0 0 10px 10px;display:flex;align-items:flex-end;gap:0;"><span style="font-size:30px;font-weight:600;line-height:30px;">${rate.replace('%','')}</span><span style="font-size:22px;font-weight:600;line-height:26px;">%</span></div>`:''}<div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:10px 0 14px 0;"><div style="display:flex;flex-direction:column;gap:4px;"><div style="font-size:30px;font-weight:500;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${brand||''}</div><div style="font-size:30px;font-weight:400;color:#5f5f5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name||''}</div></div><div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;"><span style="font-size:40px;font-weight:600;color:#111;">${price||''}</span>${orig?`<span style="font-size:30px;font-weight:400;color:#cfcfcf;text-decoration:line-through;">${orig}</span>`:''}</div></div></div></div>`;
         return`<div style="width:750px;height:1000px;background:#f5f5f5;position:relative;overflow:hidden;font-family:'Pretendard',sans-serif;"><div style="position:absolute;top:0;left:0;width:750px;padding-top:80px;padding-left:60px;padding-right:60px;text-align:center;z-index:2;"><div style="font-size:70px;font-weight:700;color:#111;line-height:70px;letter-spacing:-1.4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.headline||''}</div></div><div style="position:absolute;top:200px;left:40px;right:40px;display:flex;flex-direction:column;gap:16px;overflow:hidden;bottom:160px;">${mkCard2(imgTag1,d.product1Brand,d.product1Name,d.product1Rate,d.product1Price,d.product1Orig,showDate,d.date,d.time)}${mkCard2(imgTag2,d.product2Brand,d.product2Name,d.product2Rate,d.product2Price,d.product2Orig,showDate,d.product2Date||d.date,d.product2Time||d.time)}</div><div style="position:absolute;bottom:40px;left:40px;right:40px;height:100px;background:${d.btnColor||'#00A1FF'};border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:600;color:white;letter-spacing:-0.36px;z-index:2;">${d.btnText||'구매하기'}</div></div>`;}
     break;}
     case 'C':{
@@ -1485,21 +1555,26 @@ function cardHTML(card){
         const infoSvg=`<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="white" stroke-width="2" opacity="0.7"/><text x="18" y="24" text-anchor="middle" fill="white" font-size="16" opacity="0.7">i</text></svg>`;
         if(d.bannerType==='스오딜'){
           const tabs=[d.tab1,d.tab2,d.tab3,d.tab4,d.tab5].filter(Boolean);
-          return`<div style="background:#ff4747;height:104px;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 30px;overflow:hidden;">${tabs.map((t,i)=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:104px;padding:0 12px;${i===0?'border-bottom:4px solid #fbff00;':''}"><span style="font-size:33px;font-weight:${i===0?'700':'500'};color:${i===0?'#fbff00':'white'};letter-spacing:-0.5px;white-space:nowrap;">${t}</span></div>`).join('')}</div>`;
+          return`<div style="background:#ff4747;height:104px;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 30px;overflow:hidden;">${tabs.map((t,i)=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:104px;padding:0 12px;${i===0?'border-bottom:4px solid #fbff00;':''}"><span style="font-size:30px;font-weight:${i===0?'700':'400'};color:${i===0?'#fbff00':'white'};letter-spacing:-0.5px;white-space:nowrap;">${t}</span></div>`).join('')}</div>`;
         }
-        const bgColor=d.bannerType==='오마트'?'#ff8442':d.bannerType==='오늘의딜'?'#000000':(d.bannerColor||'#184180');
-        return`<div style="background:${bgColor};height:104px;display:flex;align-items:center;padding:0 40px;gap:8px;">${infoSvg}<span style="font-size:33px;font-weight:500;color:white;letter-spacing:-0.33px;flex:1;">${txt}</span></div>`;
+        const bgColor=d.bannerType==='오마트'?'#ff8442':d.bannerType==='오늘의딜'?'#FF4747':(d.bannerColor||'#184180');
+        return`<div style="background:${bgColor};height:104px;display:flex;align-items:center;padding:0 40px;gap:8px;">${infoSvg}<span style="font-size:30px;font-weight:400;color:white;letter-spacing:-0.33px;flex:1;">${txt}</span></div>`;
       })();
       const badgeCount=d.badgeCount==='없음'?0:parseInt(d.badgeCount||'3');
       const mkBadge=(type,rate,line1,line2)=>{
-        const _payC={'결제사_카카오페이':'#ffeb00','결제사_네이버페이':'#00DE5A','결제사_토스페이':'#3182F6','결제사_오늘의집페이':'#00A1FF'};const isP=type&&type.startsWith('결제사_');const bg=isP?(_payC[type]||'#ffeb00'):'#2f2f2f';const tc=isP?'#2f2f2f':'white';const tc2=isP?'rgba(47,47,47,0.4)':'rgba(255,255,255,0.6)';const pn=isP?type.replace('결제사_',''):'';
-        if(type==='무료배송')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:30px;"><span style="font-size:33px;font-weight:600;color:white;opacity:0.9;letter-spacing:-0.33px;">무료</span><span style="font-size:26px;font-weight:600;color:rgba(255,255,255,0.6);letter-spacing:-0.26px;">배송</span></div>`;
-        if(type==='사용자기재')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:30px;"><span style="font-size:26px;font-weight:600;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.3;">${line1||''}</span>${line2?`<span style="font-size:26px;font-weight:600;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.3;">${line2}</span>`:''}</div>`;
-        return`<div style="width:160px;height:160px;border-radius:200px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:30px;"><span style="font-size:33px;font-weight:600;color:${tc};opacity:0.9;letter-spacing:-0.33px;">${rate||''}</span><span style="font-size:26px;font-weight:600;color:${tc2};letter-spacing:-0.26px;">${isP?pn:type}</span></div>`;
+        const _payC={'결제사_카카오페이':'#ffeb00','결제사_네이버페이':'#00DE5A','결제사_토스페이':'#3182F6','결제사_오늘의집페이':'#00A1FF'};
+        const isP=type&&type.startsWith('결제사_');const bg=isP?(_payC[type]||'#ffeb00'):'#2f2f2f';
+        const isWB=type==='결제사_토스페이'||type==='결제사_오늘의집페이';
+        const rateTc=isP?(isWB?'#ffffff':'#2f2f2f'):'white';const rateFw=isP?(isWB?'500':'600'):'500';
+        const nameTc=isP?(isWB?'rgba(255,255,255,0.6)':'rgba(47,47,47,0.7)'):'rgba(255,255,255,0.6)';
+        const rawPn=isP?type.replace('결제사_',''):'';const payPn=isP?(rawPn.length>4?rawPn.replace('페이','<br>페이'):rawPn):'';
+        if(type==='무료배송')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:25px 30px 30px;text-align:center;"><span style="font-size:30px;font-weight:500;color:white;opacity:0.9;letter-spacing:-0.3px;">무료</span><span style="font-size:26px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:-0.26px;line-height:28px;">배송</span></div>`;
+        if(type==='사용자기재')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:30px;text-align:center;"><span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line1||''}</span>${line2?`<span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line2}</span>`:''}</div>`;
+        return`<div style="width:160px;height:160px;border-radius:200px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:25px 30px 30px;text-align:center;"><span style="font-size:30px;font-weight:${rateFw};color:${rateTc};opacity:0.9;letter-spacing:-0.3px;">${rate||''}</span><span style="font-size:26px;font-weight:400;color:${nameTc};letter-spacing:-0.26px;line-height:${isP?'29':'28'}px;">${isP?payPn:type}</span></div>`;
       };
       const badges=[];for(let i=1;i<=badgeCount;i++)badges.push(mkBadge(d[`badge${i}Type`],d[`badge${i}Rate`],d[`badge${i}Line1`],d[`badge${i}Line2`]));
       const badgeHTML=badges.length?`<div style="position:absolute;top:${d.bannerType==='없음'?'30px':'134px'};right:30px;display:flex;flex-direction:column;gap:8px;z-index:3;">${badges.join('')}</div>`:'';
-      const noticeHTML=d.showNotice==='on'?`<div style="position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:26px;font-weight:500;color:rgba(255,255,255,0.7);letter-spacing:-0.26px;z-index:4;">할인 혜택은 조기 종료될 수 있음</div>`:'';
+      const noticeHTML=d.showNotice==='on'?`<div style="position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:26px;font-weight:400;color:rgba(255,255,255,0.7);letter-spacing:-0.26px;z-index:4;">할인 혜택은 조기 종료될 수 있음</div>`:'';
       const dimHTML=d.showNotice==='on'?`<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 71%,rgba(0,0,0,0.2) 100%);pointer-events:none;z-index:1;"></div>`:'';
       return`<div style="width:750px;height:1000px;position:relative;overflow:hidden;font-family:'Pretendard',sans-serif;"><div style="position:absolute;inset:0;">${imgC}</div>${dimHTML}<div style="position:absolute;top:0;left:0;width:750px;z-index:2;">${bannerHTML}</div>${badgeHTML}${noticeHTML}</div>`;
     }
@@ -1528,7 +1603,16 @@ function loadCSV(e){
       newCards.push({id:++uid,templateId:t.id,type:t.type,data});
     }
     if(newCards.length===0){alert('templateId 열을 확인해주세요.');return;}
-    cards=[...cards,...newCards];renderAll();alert(`${newCards.length}개 카드를 불러왔습니다.`);
+    const remain=MAX_CARDS-cards.length;
+    if(remain<=0){alert(`이미 카드가 ${MAX_CARDS}장으로 가득 차 있어요. 기존 카드를 삭제한 뒤 다시 시도해주세요.`);return;}
+    const toAdd=newCards.slice(0,remain);
+    const skipped=newCards.length-toAdd.length;
+    cards=[...cards,...toAdd];renderAll();
+    if(skipped>0){
+      alert(`${toAdd.length}개 카드를 불러왔어요. (최대 ${MAX_CARDS}장 제한으로 ${skipped}개는 제외됨)`);
+    }else{
+      alert(`${toAdd.length}개 카드를 불러왔습니다.`);
+    }
   };
   r.readAsText(f,'UTF-8');e.target.value='';
 }

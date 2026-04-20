@@ -1,225 +1,196 @@
-# 카카오톡 브랜드 메시지 캐러셀 빌더
+# CLAUDE.md
+
+> 카카오톡 브랜드 메시지 캐러셀 빌더 — AI/개발자 참고 문서
+> 상세 디자인 스펙은 [`docs/DESIGN_SPEC.md`](./docs/DESIGN_SPEC.md) 참조
+
+---
 
 ## 프로젝트 개요
-카카오톡 브랜드 메시지 캐러셀 템플릿을 편집하고 미리보기할 수 있는 웹 빌더.
-단일 HTML 파일(`public/kakao-crm-builder.html`)로 구성된 순수 HTML/CSS/JS 앱.
+
+카카오톡 브랜드 메시지 캐러셀 템플릿 사내 빌더. CRM 캠페인 담당자가 디자이너 없이 카드를 제작할 수 있게 해주는 웹 툴.
+
+- **형태**: 단일 HTML 파일 (`public/kakao-crm-builder.html`)
+- **스택**: 순수 HTML/CSS/JS (프레임워크 없음)
+- **외부**: iro.js (컬러피커), remove.bg API (누끼)
+- **캔버스**: 750×1000px, 미리보기 0.5배율
 
 ---
 
 ## 파일 구조
 
+```
+kakao-builder/
+├── CLAUDE.md
+├── docs/DESIGN_SPEC.md          ← 디자인 스펙 상세
+├── api/
+├── public/
+│   ├── assets/
+│   ├── index.html
+│   ├── kakao-crm-builder.html       ← 메인 빌더
+│   └── kakao-crm-builder.bak.html   ← 백업
+└── vercel.json
+```
+
 ---
 
-## 개발 환경 실행
+## 개발 환경
 
-**터미널 1 - browser-sync:**
+### 3-터미널 워크플로우
+
+**터미널 1 — browser-sync**
 ```bash
 browser-sync start --server "/Users/hj.moon/Desktop/M/4-MKTD/2026 OKR/CRM_카카오_브랜드메시지_템플릿_효율화/kakao-builder/public" --index "kakao-crm-builder.html" --files "**/*" --port 3000
 ```
+접속: `http://localhost:3000` · 파일 변경 시 자동 새로고침
 
-**터미널 2 - Claude Code:**
+**터미널 2 — Claude Code**
 ```bash
 cd "/Users/hj.moon/Desktop/M/4-MKTD/2026 OKR/CRM_카카오_브랜드메시지_템플릿_효율화/kakao-builder" && claude
 ```
 
-**터미널 3 - Git 작업:**
+**터미널 3 — Git**
 ```bash
-# 백업
+# 세트별 백업
 cp "public/kakao-crm-builder.html" "public/kakao-crm-builder.bak.html"
 
-# 배포
+# 배포 (GitHub push → Netlify 자동 배포)
 git add .
 git commit -m "작업 내용"
 git push
 ```
 
----
-
-## 배포
+### 배포
 - GitHub: https://github.com/moonsun8975-glitch/kakao-builder
 - Netlify: https://ohouse-crm-builder.netlify.app
-- git push 하면 Netlify 자동 배포
 
 ---
 
-## 카드 템플릿 ID 체계
-| ID | 이름 | 영역 | desc |
-|----|------|------|------|
-| A | 브랜드형 | 표지 | 브랜드이미지+혜택+버튼 |
-| B | 가격강조형 | 표지 | 제품이미지+가격+버튼 |
-| C | 혜택형 | 내지 | 상단띠배너+배지 |
-| D | 제품리스트형 | 내지 | 상단띠배너+제품정보 |
-| E | 쿠폰형 | 내지 | 쿠폰 최대 3개 |
-| F | 쿠폰형 | 내지 | 쿠폰 최대 3개 |
-| G | 이미지형 | 내지 | 브랜드이미지+할인율,원가,배지 |
-| H | 프레임형 | 내지 | 브랜드이미지+배지 |
-| H1 | 룩북형 | 내지 | 최대 2컷 조합 |
-| H2 | 룩북형 | 내지 | 최대 3컷 조합 |
-| H3 | 룩북형 | 내지 | 최대 4컷 조합 |
-| I | 자유형 | 내지 | 제품이미지+제품명,원가,할인율 |
-| J | 카테고리형 | 아웃트로 | 리스트 3,4,6,9개 |
-| K | 리스트형 | 아웃트로 | 이미지+간략정보 |
+## 카드 구성 체계
+
+### 섹션과 템플릿
+- **섹션** (`cover`/`inner`/`outro`) = 사이드바 시각 분류일 뿐. 카드 자체엔 고유 속성 없음
+- **템플릿 ID**: A·B(표지) / C~I(내지) / J·K(아웃트로)
+- **커스텀 에디터 완성**: A·B·C / **범용 fields 폼**: D·E·F·G·H·H1·H2·H3·I·J·K
+- 전체 템플릿 상세는 [`docs/DESIGN_SPEC.md`](./docs/DESIGN_SPEC.md) 참조
+
+### 카드 추가·이동 정책
+- **최대**: 10장 (`MAX_CARDS=10`)
+- **삽입**: 선택 카드 바로 아래. 선택 없으면 맨 뒤
+- **섹션 귀속**: 삽입 위치 앞 카드의 섹션을 따라감
+- **번호**: 배열 순서대로 자동 재계산
 
 ---
 
-## 주요 함수
-- `renderAll()` : 사이드바 + 미리보기 전체 렌더링
-- `renderSidebar()` : 좌측 카드 구성 목록 렌더링
-- `renderPreview()` : 우측 미리보기 카드 렌더링
-- `renderEditor()` : 편집창 렌더링 (templateId 기반 분기)
-- `renderEditorA(card, body)` : 표지A 커스텀 편집창
-- `renderEditorB(card, body)` : 표지B 커스텀 편집창
-- `renderEditorC(card, body)` : 내지C 커스텀 편집창
-- `cardHTML(card)` : 템플릿별 미리보기 HTML 생성
-- `updateField(key, value)` : 편집창 필드 값 업데이트
-- `moveCard(e, idx, dir)` : 카드 순서 이동
-- `selectCard(idx)` : 카드 선택
-- `addCard()` : 카드 추가 (모달에서 선택)
-- `handleImgFile/handleImgFileB/handleImgFileC` : 이미지 파일 업로드 처리
-- `removeBackground(src, isUrl, cb)` : remove.bg API 누끼 처리
-- `showImgHandles/showImgHandlesB/showImgHandlesC` : 이미지 위치조정 핸들 표시
-- `hideImgHandles()` : 핸들 제거
+## 주요 상수·함수
 
----
-
-## 텍스트 가이드
-카카오톡 캐러셀 기준 (750×1000px, 미리보기 0.5 스케일)
-
-### 폰트
-- 폰트: `Pretendard`
-- 기본 letter-spacing: `-0.02em` 기준
-
-### 텍스트 스펙 (표지A 브랜드형)
-| 요소 | 크기 | 두께 | 비고 |
-|------|------|------|------|
-| 서브텍스트 | 40px | 400 | color: #393939 |
-| 메인텍스트 | 70px | 700 | letter-spacing: -1.4px |
-| 혜택 라벨 | 30px | 400 | color: #5f5f5f |
-| 혜택 내용 | 36px | 600 | color: btnColor |
-| 버튼 텍스트 | 36px | 600 | letter-spacing: -0.36px |
-
-### 텍스트 스펙 (표지B 가격강조형)
-| 요소 | 크기 | 두께 | 비고 |
-|------|------|------|------|
-| 메인텍스트 | 70px | 700 | letter-spacing: -1.4px |
-| 날짜/시간 | 26px | 400 | color: #5f5f5f |
-| 브랜드명 | 30px | 500 | color: #111 |
-| 제품명 | 30px | 400 | color: #5f5f5f |
-| 할인율 | 40px | 600 | color: #ef3c2c |
-| 판매가 | 40px | 600 | color: #111 |
-| 원가 | 30px | 400 | color: #cfcfcf, line-through |
-| 버튼 텍스트 | 36px | 600 | letter-spacing: -0.36px |
-
-### 텍스트 스펙 (내지C 혜택형)
-| 요소 | 크기 | 두께 | 비고 |
-|------|------|------|------|
-| 띠배너 텍스트 | 30px | 400 | color: white |
-| 배지 할인율 | 30px | 일반 500 / 결제사 600 | opacity: 0.9, 최대 3글자, 1줄 고정 |
-| 배지 유형명 | 26px | 400 | line-height: 28px (결제사 29px) |
-| 하단 유의사항 | 26px | 400 | color: rgba(255,255,255,0.7) |
-
-### 원형 배지 스펙
-- 크기: 160×160px, border-radius: 200px
-- padding: 25px 30px 30px (사용자기재는 30px)
-- 할인율↔유형명 간격: gap 4px
-
-### 배지 타입별 컬러
-| 유형 | 배경 | 할인율 컬러 | 할인율 두께 | 유형명 컬러 |
-|------|------|------------|------------|------------|
-| 즉시할인/상품쿠폰/장바구니 | `#2f2f2f` | `white` | 500 | `rgba(255,255,255,0.6)` |
-| 무료배송 | `#2f2f2f` | `white` | 500 | `rgba(255,255,255,0.6)` |
-| 사용자기재 | `#2f2f2f` | `white` | 500 | `rgba(255,255,255,0.6)` |
-| 카카오페이 | `#ffeb00` | `#2f2f2f` | 600 | `rgba(47,47,47,0.7)` |
-| 네이버페이 | `#00DE5A` | `#2f2f2f` | 600 | `rgba(47,47,47,0.7)` |
-| 토스페이 | `#3182F6` | `#ffffff` | 500 | `rgba(255,255,255,0.6)` |
-| 오늘의집페이 | `#00A1FF` | `#2f2f2f` | 600 | `rgba(47,47,47,0.7)` |
-
-### 배지 개수별 유형 선택 규칙
-- 1개: 전체 유형 선택 가능
-- 2개: 배지1 = 결제사 제외 / 배지2 = 전체
-- 3개: 배지1,2 = 결제사 제외 / 배지3 = 결제사만
-
-### 글자수 규칙
-- 유형명 5글자 이하: 한 줄 표시
-- 유형명 5글자 초과: "페이" 다음 줄로 분리 (예: 카카오\n페이)
-- 토스페이(4글자): 한 줄 유지
-- 할인율 최대 3글자
-- 사용자기재: 1줄당 최대 5글자, 최대 2줄
-
-### 띠배너 컬러 (내지C)
-| 배너 | HEX |
-|------|-----|
-| 브랜드형 | 자유 설정 (기본 `#184180`) |
-| 오마트 | `#ff8442` |
-| 오늘의딜 | `#FF4747` |
-| 스오딜 | `#ff4747` (탭 선택: `#fbff00` 언더라인) |
-| 오세일 | 자유 설정 (기본 `#00A1FF`) |
-
----
-
-## 이미지 가이드
-- 캔버스 크기: **750×1000px**
-- 미리보기 배율: **0.5** (375×500px로 표시)
-- 지원 확장자: `png`, `jpg`, `jpeg`, `avif`, `webp`
-- URL 이미지: 누끼/자동 컬러 추출 불가 (CORS 제한)
-- 파일 업로드: avif → canvas → PNG 변환 후 처리
-
-### 이미지 타입별
-| 타입 | 설명 | 누끼처리 |
-|------|------|---------|
-| 연출컷 | 배경 있는 이미지 | ❌ |
-| 누끼컷 | 배경 제거된 이미지 | ✅ (remove.bg API) |
-
-### 이미지 위치 조정
-- 드래그: 이미지 이동
-- 핸들(8개): 크기 조정
-- 휠: 확대/축소
-- 완료 버튼: 편집 종료 (필수)
-
----
-
-## 컬러 팔레트 가이드
-
-### 카카오 브랜드 컬러
-| 이름 | HEX | 용도 |
+### 상수
+| 이름 | 값 | 의미 |
 |------|-----|------|
-| 카카오 옐로우 | `#FEE500` | 기본 버튼, 활성화 배지 |
-| 카카오 브라운 | `#3C1E1E` | 카카오 옐로우 버튼 텍스트 |
+| `MAX_CARDS` | 10 | 카드 최대 개수 |
+| `DEFAULT_GRAD_COLOR` | `#FFFFFF` | 그라디언트 기본값 |
+| `DEFAULT_BTN_COLOR` | `#00A1FF` | 버튼 기본값 |
+| `REMOVE_BG_KEY` | (하드코딩) | remove.bg API 키 |
 
-### 배지 컬러
-| 유형 | 배경 | 텍스트 |
-|------|------|--------|
-| 즉시할인/상품쿠폰/장바구니/무료배송 | `#2f2f2f` | `white` |
-| 카카오페이 | `#ffeb00` | `#2f2f2f` |
-| 네이버페이 | `#00DE5A` | `#2f2f2f` |
-| 토스페이 | `#3182F6` | `#2f2f2f` |
-| 오늘의집페이 | `#00A1FF` | `#2f2f2f` |
+### 렌더링 흐름
+```
+renderAll()
+  ├ renderSidebar()  — 사이드바 + "+ 카드 추가" 버튼 활/비활
+  └ renderPreview()  — 미리보기 + 편집 핸들 복원
+renderEditor() — 중앙 편집창 (templateId 기반 분기)
+  ├ renderEditorA(card, body)   — 표지 A 브랜드형
+  ├ renderEditorB(card, body)   — 표지 B 가격강조형
+  ├ renderEditorC(card, body)   — 내지 C 혜택형
+  └ 범용 fields 루프             — D~K
+cardHTML(card) — 템플릿별 미리보기 HTML
+```
 
-### UI 컬러 (CSS 변수)
-| 변수 | 용도 |
+### 카드 조작
+| 함수 | 역할 |
 |------|------|
-| `--y200` | 노란 배경 (활성화) |
-| `--kakao-brown` | 카카오 브라운 텍스트 |
-| `--text` | 기본 텍스트 |
-| `--text-sub` | 보조 텍스트 |
-| `--text-hint` | 힌트 텍스트 |
-| `--border` | 기본 테두리 |
-| `--border-strong` | 강조 테두리 |
+| `addCard()` | 10장 제한 체크 + 선택 카드 아래 삽입 |
+| `moveCard(e, idx, dir)` | 순서 이동 (섹션 내/간) |
+| `delCard(e, idx)` | 삭제 |
+| `selectCard(idx)` | 선택 + 이전 편집 상태 정리 |
+| `_syncBadgeTypes(d, n)` | C 배지 개수 변경 시 무효값 보정 |
+| `_switchImageTypeA(d, t)` | A 이미지 타입 전환 시 자동 모드만 재계산 |
 
-### 띠배너 컬러
-| 배너 | HEX |
-|------|-----|
-| 브랜드형 | 자유 설정 (기본 `#184180`) |
-| 오마트 | `#ff8442` |
-| 오늘의딜 | `#000000` |
-| 스오딜 | `#ff4747` |
-| 오세일 | 자유 설정 |
+### 이미지 처리
+| 함수 | 역할 |
+|------|------|
+| `handleImgFile` / `B` / `C` | 파일 업로드 (템플릿별) |
+| `handleImgUrl` / `B` / `C` | URL 이미지 |
+| `removeBackground(src, isUrl, cb)` | remove.bg 호출 |
+| `_applyImgAndExtract(d, onDone)` | 컬러 추출 + auto 플래그 세팅 |
+| `extractImgColor` / `CenterColor` | 평균/중앙 컬러 추출 |
+| `calcBtnColor` / `makeLightBgColor` / `makeGradient` | 컬러 가공 |
+| `showImgHandles` / `B` / `2B` / `C` | 편집 핸들 표시 |
+| `resetImg` / `B` / `2B` / `C` | 위치·크기 초기화 |
+| `toggleImgEdit` / `B` / `2B` / `C` | 편집 모드 토글 |
+| `showNukkiLoading` / `hideNukkiLoading` | 로딩 스피너 |
 
-### 가격 컬러
-| 용도 | HEX |
-|------|-----|
-| 할인율 | `#ef3c2c` |
-| 판매가 | `#111111` |
-| 원가 (취소선) | `#cfcfcf` |
-| 브랜드명 | `#111111` |
-| 제품명 | `#5f5f5f` |
+### 컬러피커
+| 함수 | 역할 |
+|------|------|
+| `toggleIro(pid, key)` | iro.js 피커 열기/닫기 |
+| `onIroHex(key, pid, el)` | HEX 입력 동기화 |
+| `startEyedropper(edType, key, pid)` | 이미지에서 컬러 추출 |
+| `autoUpdateBtnColor(d)` | 자동 모드일 때 버튼 컬러 재계산 |
+
+### 자동/수동 토글 플래그
+사용자가 iro 피커로 컬러를 변경하면 `_XXXAuto = false`로 세팅됨. "자동" 버튼 누르면 `true` 복원 + `_autoXXX` 값 적용.
+
+| 플래그 | 제어 대상 |
+|--------|-----------|
+| `_btnColorAuto` | 버튼 컬러 |
+| `_gradColorAuto` | 그라디언트 컬러 |
+| `_bgColorAuto` | 배경 컬러 |
+
+---
+
+## 코딩 규칙
+
+- 단일 HTML 파일 구조 유지 (`public/kakao-crm-builder.html`)
+- 문자열 이스케이프는 `esc()` 사용 (`&`, `<`, `>`, `"` 변환)
+- 편집창 변경 후 `updateField()` 호출 — 내부에서 `renderPreview()` + `renderSidebar()` 자동 실행
+- 이미지 편집 상태(`_imgEditing`, `_img2Editing`)는 카드 전환 시 반드시 해제
+- 누끼/컬러 추출은 비동기 → 완료 전 UI 상태 관리 주의 (BUG-05 참고)
+
+---
+
+## 최근 변경 이력
+
+### 2026-04-20 — CRITICAL 버그 8개 패치
+| # | 패치 | 영향 |
+|:--:|------|------|
+| BUG-01 | B 템플릿 2상품 날짜 `<span>` 누락 | 날짜/시간 양끝 정렬 복구 |
+| BUG-02 | B 누끼 로딩 ID 불일치 | 정확한 로더 제거 |
+| BUG-04 | A 이미지타입 전환 시 수동 컬러 보존 | 사용자 설정 유지 |
+| BUG-05 | A 누끼 로딩 스피너 순서 재조정 | 로더 제때 표시·제거 |
+| BUG-06 | 누끼 실패 사용자 alert 추가 | 실패 사실 전달 |
+| BUG-07 | `resetImgC` 데이터 초기화 누락 | 전환 후 유지 |
+| BUG-08 | C 배지 개수 변경 시 무효값 보정 | UI/데이터 일치 |
+| NEW-03 | 카드 추가 정책 + 10장 제한 | 선택 카드 아래 삽입 |
+
+---
+
+## 향후 개선 로드맵
+
+### 🔴 보안
+- **IMP-04**: remove.bg API 키 노출 → 온디바이스(`@imgly/background-removal`) 마이그레이션
+
+### 🟡 UX
+- iro 컬러피커 ESC/외부 클릭 닫힘
+- alert → 토스트 UI
+- 카드 전환 시 편집 버튼 UI 잔재 정리
+- 셀렉트 변경 시 스크롤 위치 유지
+
+### 🟢 기능
+- 미완성 템플릿 D~K 커스텀 에디터 구현
+- PNG 내보내기 (현재 안내만)
+- 카카오 규격 validator
+- 템플릿 교체 시 데이터 마이그레이션
+
+---
+
+## 관련 문서
+- [`docs/DESIGN_SPEC.md`](./docs/DESIGN_SPEC.md) — 디자인/기획 상세 스펙

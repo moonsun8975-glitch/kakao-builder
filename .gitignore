@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# 에디터/IDE
+.vscode/
+.idea/
+*.swp
+
+# Node (혹시 미래에 쓸 경우 대비)
+node_modules/
