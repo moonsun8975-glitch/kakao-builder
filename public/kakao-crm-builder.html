@@ -79,6 +79,8 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .card-item.selected .card-actions button:hover { background: rgba(255,255,255,0.9); }
 .add-card-btn { margin: 6px 8px 8px; padding: 8px; border: 1px dashed var(--border-strong); border-radius: 8px; background: none; cursor: pointer; font-family: var(--font); font-size: 12px; color: var(--text-sub); width: calc(100% - 16px); text-align: center; transition: all 0.12s; }
 .add-card-btn:hover { border-color: var(--y300); color: #8B7700; background: #FFFCE0; }
+.add-card-btn:disabled{background:#E0E0DE;color:#A8A8A4;cursor:not-allowed;opacity:0.7;border-style:solid;}
+.add-card-btn:disabled:hover{background:#E0E0DE;color:#A8A8A4;}
 .csv-wrap { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .csv-btn { width: 100%; padding: 7px; border: 1px solid var(--border-strong); border-radius: 7px; background: none; font-family: var(--font); font-size: 11px; color: var(--text-sub); cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.12s; position: relative; }
 .csv-btn:hover { background: var(--bg); color: var(--text); }
@@ -216,7 +218,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
         <span class="card-count" id="cardCount">0장</span>
       </div>
       <div class="sidebar-body" id="cardList"></div>
-      <button class="add-card-btn" onclick="openModal()">+ 카드 추가</button>
+      <button class="add-card-btn" id="addCardBtn" onclick="openModal()">+ 카드 추가</button>
       <div class="csv-wrap">
         <label class="csv-btn">
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2" y="1" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7.5h6M4 10h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
@@ -274,6 +276,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 </div>
 
 <script>
+const MAX_CARDS=10;
 const DEFAULT_GRAD_COLOR='#FFFFFF';
 const DEFAULT_BTN_COLOR='#00A1FF';
 const TEMPLATES=[
@@ -314,9 +317,13 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 function closeModalBg(e){if(e.target===e.currentTarget)closeModal();}
 function addCard(){
   if(!selTmpl){alert('템플릿을 선택해주세요.');return;}
+  if(cards.length>=MAX_CARDS){alert(`카드는 최대 ${MAX_CARDS}장까지 추가할 수 있어요.`);return;}
   const t=TEMPLATES.find(t=>t.id===selTmpl);
-  const newCard={id:++uid,templateId:t.id,type:t.type,data:{...t.def}};
+  // 삽입 위치: 선택된 카드 바로 아래 (섹션 무관). 선택 없으면 맨 뒤.
   const insertIdx=selectedIdx>=0?selectedIdx+1:cards.length;
+  // 새 카드의 type은 삽입 위치 앞 카드의 type을 따라감
+  const newType=(insertIdx>0&&cards[insertIdx-1])?cards[insertIdx-1].type:t.type;
+  const newCard={id:++uid,templateId:t.id,type:newType,data:{...t.def}};
   cards.splice(insertIdx,0,newCard);
   closeModal();renderAll();selectCard(insertIdx);
 }
@@ -473,6 +480,17 @@ function renderSidebar(){
     });
     el.appendChild(secDiv);
   });
+  // + 카드 추가 버튼 활성화/비활성화 (MAX_CARDS 초과 방지)
+  const addBtn=document.getElementById('addCardBtn');
+  if(addBtn){
+    if(cards.length>=MAX_CARDS){
+      addBtn.disabled=true;
+      addBtn.textContent=`+ 카드 추가 (최대 ${MAX_CARDS}장)`;
+    }else{
+      addBtn.disabled=false;
+      addBtn.textContent='+ 카드 추가';
+    }
+  }
 }
 function renderEditor(){
   if(selectedIdx<0||selectedIdx>=cards.length)return;
@@ -498,6 +516,29 @@ function renderEditor(){
   body.appendChild(imgDiv);
 }
 
+/* A 이미지 타입 전환 시 컬러 재계산 (자동 모드에서만) */
+function _switchImageTypeA(d,newType){
+  if(newType==='연출컷'){
+    if(d._gradColorAuto!==false){
+      d._gradColor=d._autoGradColor||'';
+      d._gradColorAuto=true;
+    }
+    if(d._btnColorAuto!==false){
+      d.btnColor=d._autoBtnBaseColor?calcBtnColor(d._autoBtnBaseColor):(d.btnColor||'#2f8de2');
+      d._btnColorAuto=true;
+    }
+    // 연출컷은 전체 배경이 이미지로 덮이므로 bgColor는 의미 없음 — 수동 설정 유지
+  }else{
+    if(d._bgColorAuto!==false){
+      d.bgColor=d._autoBgColor||d.bgColor||'#ffffff';
+      d._bgColorAuto=true;
+    }
+    if(d._btnColorAuto!==false){
+      d.btnColor=d._autoBtnBaseColor?calcBtnColor(d._autoBtnBaseColor):(d.btnColor||'#2f8de2');
+      d._btnColorAuto=true;
+    }
+  }
+}
 /* ── 브랜드형(A) 전용 에디터 ── */
 function renderEditorA(card,body){
   const d=card.data;const bc=d.benefitCount||'2개';
@@ -511,7 +552,7 @@ function renderEditorA(card,body){
     return`${labelRow}<div style="display:flex;align-items:center;cursor:pointer;" onclick="toggleIro('${pid}','${key}')"><div class="iro-dot" data-iro="${pid}" style="width:20px;height:20px;border-radius:50%;border:1px solid #ddd;background:${val};flex-shrink:0;margin-right:8px;"></div><span style="font-size:12px;color:var(--text-sub);margin-right:4px;">#</span><input class="iro-hex" data-iro="${pid}" type="text" value="${esc(hex)}" maxlength="6" style="width:58px;font-family:monospace;font-size:11px;padding:4px 6px;margin-right:8px;" onclick="event.stopPropagation()" oninput="onIroHex('${key}','${pid}',this)">${autoBtn}</div><div id="${pid}" data-ed-type="${edType}" data-key="${key}" style="display:none;margin-top:8px;background:white;border:1px solid var(--border);border-radius:8px;padding:12px;"><div class="iro-picker-wrap" id="${pid}_iro"></div><div class="iro-slider-row" id="${pid}_row"><button class="iro-ed-btn" onclick="event.stopPropagation();startEyedropper('${edType}','${key}','${pid}')" title="이미지에서 컬러 추출"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22l4.5-4.5M20.5 3.5a2.121 2.121 0 0 0-3 0L4 17l3 3L20.5 6.5a2.121 2.121 0 0 0 0-3z"/></svg></button><button onclick="event.stopPropagation();document.getElementById('${pid}').style.display='none';" style="margin-left:auto;font-size:11px;font-family:var(--font);padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#2D6EE8;color:white;font-weight:600;">완료</button></div></div>${hint}`;};
 
   // 이미지 타입
-  mk(`<label>이미지 타입</label><select onchange="updateField('imageType',this.value);const _d=cards[selectedIdx].data;if(this.value==='연출컷'){_d._gradColor=_d._autoGradColor||'';_d._gradColorAuto=true;_d.btnColor=_d._autoBtnBaseColor?calcBtnColor(_d._autoBtnBaseColor):'#2f8de2';_d._btnColorAuto=true;_d.bgColor='#1A1A18';}else{_d.bgColor=_d._autoBgColor||'#ffffff';_d._bgColorAuto=true;_d.btnColor=_d._autoBtnBaseColor?calcBtnColor(_d._autoBtnBaseColor):'#2f8de2';_d._btnColorAuto=true;}renderPreview();renderEditor()"><option value="연출컷"${d.imageType==='연출컷'?' selected':''}>연출컷</option><option value="누끼컷"${d.imageType==='누끼컷'?' selected':''}>누끼컷</option></select>`);
+  mk(`<label>이미지 타입</label><select onchange="_switchImageTypeA(cards[selectedIdx].data,this.value);updateField('imageType',this.value);renderEditor()"><option value="연출컷"${d.imageType==='연출컷'?' selected':''}>연출컷</option><option value="누끼컷"${d.imageType==='누끼컷'?' selected':''}>누끼컷</option></select>`);
   mk(ci('서브텍스트','sub',16,''));
   mk(ci('메인텍스트 1줄','headline',10,''));
   mk(ci('메인텍스트 2줄','headline2',10,'2줄 입력 시 작성'));
@@ -1562,7 +1603,16 @@ function loadCSV(e){
       newCards.push({id:++uid,templateId:t.id,type:t.type,data});
     }
     if(newCards.length===0){alert('templateId 열을 확인해주세요.');return;}
-    cards=[...cards,...newCards];renderAll();alert(`${newCards.length}개 카드를 불러왔습니다.`);
+    const remain=MAX_CARDS-cards.length;
+    if(remain<=0){alert(`이미 카드가 ${MAX_CARDS}장으로 가득 차 있어요. 기존 카드를 삭제한 뒤 다시 시도해주세요.`);return;}
+    const toAdd=newCards.slice(0,remain);
+    const skipped=newCards.length-toAdd.length;
+    cards=[...cards,...toAdd];renderAll();
+    if(skipped>0){
+      alert(`${toAdd.length}개 카드를 불러왔어요. (최대 ${MAX_CARDS}장 제한으로 ${skipped}개는 제외됨)`);
+    }else{
+      alert(`${toAdd.length}개 카드를 불러왔습니다.`);
+    }
   };
   r.readAsText(f,'UTF-8');e.target.value='';
 }
