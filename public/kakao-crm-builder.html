@@ -71,7 +71,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .card-thumb { width: 26px; height: 34px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: #F0F0EE; color: #6B6B67; border: 1px solid #DDDDD8; }
 .card-meta { flex: 1; min-width: 0; }
 .card-name { font-size: 11.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-desc { font-size: 10px; color: var(--text-sub); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-desc { font-size: 10px; color: var(--text-sub); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-actions { display: flex; gap: 0; opacity: 0; transition: opacity 0.1s; }
 .card-item:hover .card-actions { opacity: 1; }
 .card-actions button { width: 20px; height: 20px; background: none; border: none; cursor: pointer; border-radius: 4px; color: var(--text-sub); font-size: 12px; display: flex; align-items: center; justify-content: center; }
@@ -240,7 +240,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
       <div class="preview-header">
         <div class="preview-header-left">
           <h3>미리보기</h3>
-          <span class="spec-tag">750 × 1000px · 캐러셀 와이드</span>
+          <span class="spec-tag">750×1000px · 캐러셀</span>
         </div>
         <div class="preview-actions">
           <button class="btn btn-ghost" onclick="exportPNG()">PNG 내보내기</button>
@@ -279,7 +279,7 @@ const DEFAULT_BTN_COLOR='#00A1FF';
 const TEMPLATES=[
   {id:'A',name:'브랜드형',desc:'브랜드이미지+혜택+버튼',type:'cover',customEditor:true,def:{imageType:'연출컷',benefitCount:'2개',sub:'프리미엄 컬렉션',headline:'최대 56%',headline2:'할인',benefit1Label:'혜택 1',benefit1Value:'무료배송',benefit2Label:'혜택 2',benefit2Value:'쿠폰 증정',benefit3Label:'혜택 3',benefit3Value:'단독 할인',btnText:'할인받고 구매하기',bgColor:'#1A1A18',btnColor:'#2f8de2',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false,_gradColor:'',_autoGradColor:'',_btnColorAuto:true}},
   {id:'B',name:'가격강조형',desc:'제품이미지+가격+버튼',type:'cover',customEditor:true,def:{headline:'반값딜 알림 도착',showDate:'off',date:'8/22(금)',time:'오전 9시',product1Date:'8/22(금)',product1Time:'오전 9시',product2Date:'8/22(금)',product2Time:'오전 9시',productCount:'1개',product1Brand:'브랜드명',product1Name:'제품명',product1Rate:'50%',product1Price:'20,000원',product1Orig:'40,000원',product2Brand:'브랜드명',product2Name:'제품명',product2Rate:'50%',product2Price:'20,000원',product2Orig:'40,000원',btnText:'반값딜 입장하기',btnColor:'#00A1FF',bgColor:'#f5f5f5',_img:'',_img2:'',_imgX:0,_imgY:0,_imgScale:1,_img2X:0,_img2Y:0,_img2Scale:1,_imgEditing:false,_img2Editing:false,_btnColorAuto:false}},
-  {id:'C',name:'혜택형',desc:'상단띠배너+배지',type:'inner',customEditor:true,def:{bannerType:'브랜드형',bannerText:'브랜드명',bannerColor:'#184180',tab1:'스페셜딜',tab2:'특가더보기',tab3:'라이브',tab4:'오마트',tab5:'콜라보마켓',badge1Type:'즉시할인',badge1Rate:'57%',badge2Type:'상품쿠폰',badge2Rate:'15%',badge3Type:'결제사_카카오페이',badge3Rate:'7%',badgeCount:'3개',badge1Line1:'혜택1',badge1Line2:'',badge2Line1:'혜택2',badge2Line2:'',badge3Line1:'혜택3',badge3Line2:'',showNotice:'on',_img:'',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false}},
+  {id:'C',name:'혜택형',desc:'상단띠배너+배지',type:'inner',customEditor:true,def:{bannerType:'브랜드형',bannerText:'브랜드명',bannerColor:'#00A1FF',tab1:'스페셜딜',tab2:'특가더보기',tab3:'라이브',tab4:'오마트',tab5:'콜라보마켓',badge1Type:'즉시할인',badge1Rate:'57%',badge2Type:'상품쿠폰',badge2Rate:'15%',badge3Type:'결제사_카카오페이',badge3Rate:'7%',badgeCount:'3개',badge1Line1:'혜택1',badge1Line2:'',badge2Line1:'혜택2',badge2Line2:'',badge3Line1:'혜택3',badge3Line2:'',showNotice:'on',_img:'',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false}},
   {id:'D',name:'제품리스트형',desc:'상단띠배너+제품정보',type:'inner',fields:['brand','productName','discountRate','salePrice','originalPrice','noticeText','btnText','bgColor'],def:{brand:'리바트',productName:'사선 컷팅 테이프 크리너 9종',discountRate:'56%',salePrice:'24,900원',originalPrice:'46,800원',noticeText:'일부 상품은 쿠폰 적용이 제한될 수 있습니다.',btnText:'지금 구매하기',bgColor:'#FFFFFF'}},
   {id:'E',name:'쿠폰형',desc:'쿠폰 최대 3개',type:'inner',fields:['headline','coupon1Name','coupon1Value','coupon1Detail','noticeText'],def:{headline:'다운로드 쿠폰',coupon1Name:'라이브 단 하루 25% 쿠폰',coupon1Value:'25%',coupon1Detail:'최소 50,000원 이상 구매 시 사용 가능',noticeText:'쿠폰 다운로드 기간: 오늘 00시~내일 00시'}},
   {id:'F',name:'쿠폰형',desc:'쿠폰 최대 3개',type:'inner',fields:['headline','coupon1Name','coupon1Value','coupon2Name','coupon2Value','noticeText'],def:{headline:'중복 사용 가능',coupon1Name:'신규 회원 10% 쿠폰',coupon1Value:'10%',coupon2Name:'브랜드 단독 15% 쿠폰',coupon2Value:'15%',noticeText:'쿠폰 중복 사용 가능'}},
@@ -424,7 +424,7 @@ function renderSidebar(){
       if(selectedIdx===dragIdx)selectedIdx=newTi;
       else{if(dragIdx<selectedIdx)selectedIdx--;if(newTi<=selectedIdx)selectedIdx++;}
       dragIdx=-1;renderAll();};
-    item.innerHTML=`<span class="drag-handle">⠿</span><div class="card-thumb">${i+1}</div><div class="card-meta"><div class="card-name">${t.name}</div><div class="card-desc">${tl[origType]||''} ${t.id}, ${t.desc}</div></div><div class="card-actions"><button onclick="moveCard(event,${i},-1)">↑</button><button onclick="moveCard(event,${i},1)">↓</button><button onclick="delCard(event,${i})">×</button></div>`;
+    item.innerHTML=`<span class="drag-handle">⠿</span><div class="card-thumb">${i+1}</div><div class="card-meta"><div class="card-name">${t.id} ${t.name}</div><div class="card-desc">${t.desc}</div></div><div class="card-actions"><button onclick="moveCard(event,${i},-1)">↑</button><button onclick="moveCard(event,${i},1)">↓</button><button onclick="delCard(event,${i})">×</button></div>`;
     return item;
   }
   sections.forEach((type,si)=>{
@@ -477,8 +477,8 @@ function renderSidebar(){
 function renderEditor(){
   if(selectedIdx<0||selectedIdx>=cards.length)return;
   const card=cards[selectedIdx];const t=TEMPLATES.find(t=>t.id===card.templateId);
-  document.getElementById('editorTitle').textContent=t.name+' 편집';
-  document.getElementById('editorSub').textContent=t.id+' · '+t.desc;
+  document.getElementById('editorTitle').textContent=t.id+' '+t.name+' 편집';
+  document.getElementById('editorSub').textContent=t.desc;
   const body=document.getElementById('editorBody');body.innerHTML='';
   if(t.customEditor&&t.id==='A'){renderEditorA(card,body);return;}
   if(t.customEditor&&t.id==='B'){renderEditorB(card,body);return;}
@@ -652,7 +652,7 @@ function renderEditorC(card,body){
     const rateKey=`badge${i}Rate`;const line1Key=`badge${i}Line1`;const line2Key=`badge${i}Line2`;
     const showRate=bType!=='무료배송'&&bType!=='사용자기재';
     const showCustom=bType==='사용자기재';
-    mk(`<label>배지 ${i}</label><div style="display:flex;gap:8px;align-items:center;"><select style="flex:1;" onchange="updateField('badge${i}Type',this.value);renderEditor()">${availTypes.map(t=>`<option value="${t}"${bType===t?' selected':''}>${t}</option>`).join('')}</select>${showRate?`<div style="position:relative;display:flex;align-items:center;width:90px;flex-shrink:0;"><input type="text" value="${esc((d[rateKey]||'').replace('%','').slice(0,4))}" maxlength="4" placeholder="57" style="width:100%;padding-right:20px;text-align:right;" oninput="this.value=this.value.replace(/[^0-9]/g,'');updateField('${rateKey}',this.value+'%')"><span style="position:absolute;right:10px;font-size:12px;color:var(--text-sub);">%</span></div>`:''}</div>${showCustom?`<div style="display:flex;gap:8px;margin-top:6px;"><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line1Key]||'')}" maxlength="5" placeholder="1줄" oninput="updateField('${line1Key}',this.value)"></div><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line2Key]||'')}" maxlength="5" placeholder="2줄" oninput="updateField('${line2Key}',this.value)"></div></div>`:''}`);
+    mk(`<label>배지 ${i}</label><div style="display:flex;gap:8px;align-items:center;"><select style="flex:1;" onchange="updateField('badge${i}Type',this.value);renderEditor()">${availTypes.map(t=>`<option value="${t}"${bType===t?' selected':''}>${t}</option>`).join('')}</select>${showRate?`<div style="position:relative;display:flex;align-items:center;width:90px;flex-shrink:0;"><input type="text" value="${esc((d[rateKey]||'').replace('%','').slice(0,3))}" maxlength="3" placeholder="57" style="width:100%;padding-right:20px;text-align:right;" oninput="this.value=this.value.replace(/[^0-9]/g,'');updateField('${rateKey}',this.value+'%')"><span style="position:absolute;right:10px;font-size:12px;color:var(--text-sub);">%</span></div>`:''}</div>${showCustom?`<div style="display:flex;gap:8px;margin-top:6px;"><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line1Key]||'')}" maxlength="5" placeholder="1줄" oninput="updateField('${line1Key}',this.value)"></div><div style="position:relative;flex:1;"><input type="text" value="${esc(d[line2Key]||'')}" maxlength="5" placeholder="2줄" oninput="updateField('${line2Key}',this.value)"></div></div>`:''}`);
   }
   // 하단 유의사항
   mk(`<label>하단 유의사항</label><select onchange="updateField('showNotice',this.value);renderPreview()"><option value="on"${d.showNotice==='on'?' selected':''}>표시</option><option value="off"${d.showNotice==='off'?' selected':''}>미표시</option></select>`);
@@ -1485,21 +1485,26 @@ function cardHTML(card){
         const infoSvg=`<svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="white" stroke-width="2" opacity="0.7"/><text x="18" y="24" text-anchor="middle" fill="white" font-size="16" opacity="0.7">i</text></svg>`;
         if(d.bannerType==='스오딜'){
           const tabs=[d.tab1,d.tab2,d.tab3,d.tab4,d.tab5].filter(Boolean);
-          return`<div style="background:#ff4747;height:104px;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 30px;overflow:hidden;">${tabs.map((t,i)=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:104px;padding:0 12px;${i===0?'border-bottom:4px solid #fbff00;':''}"><span style="font-size:33px;font-weight:${i===0?'700':'500'};color:${i===0?'#fbff00':'white'};letter-spacing:-0.5px;white-space:nowrap;">${t}</span></div>`).join('')}</div>`;
+          return`<div style="background:#ff4747;height:104px;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 30px;overflow:hidden;">${tabs.map((t,i)=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:104px;padding:0 12px;${i===0?'border-bottom:4px solid #fbff00;':''}"><span style="font-size:30px;font-weight:${i===0?'700':'400'};color:${i===0?'#fbff00':'white'};letter-spacing:-0.5px;white-space:nowrap;">${t}</span></div>`).join('')}</div>`;
         }
-        const bgColor=d.bannerType==='오마트'?'#ff8442':d.bannerType==='오늘의딜'?'#000000':(d.bannerColor||'#184180');
-        return`<div style="background:${bgColor};height:104px;display:flex;align-items:center;padding:0 40px;gap:8px;">${infoSvg}<span style="font-size:33px;font-weight:500;color:white;letter-spacing:-0.33px;flex:1;">${txt}</span></div>`;
+        const bgColor=d.bannerType==='오마트'?'#ff8442':d.bannerType==='오늘의딜'?'#FF4747':(d.bannerColor||'#184180');
+        return`<div style="background:${bgColor};height:104px;display:flex;align-items:center;padding:0 40px;gap:8px;">${infoSvg}<span style="font-size:30px;font-weight:400;color:white;letter-spacing:-0.33px;flex:1;">${txt}</span></div>`;
       })();
       const badgeCount=d.badgeCount==='없음'?0:parseInt(d.badgeCount||'3');
       const mkBadge=(type,rate,line1,line2)=>{
-        const _payC={'결제사_카카오페이':'#ffeb00','결제사_네이버페이':'#00DE5A','결제사_토스페이':'#3182F6','결제사_오늘의집페이':'#00A1FF'};const isP=type&&type.startsWith('결제사_');const bg=isP?(_payC[type]||'#ffeb00'):'#2f2f2f';const tc=isP?'#2f2f2f':'white';const tc2=isP?'rgba(47,47,47,0.4)':'rgba(255,255,255,0.6)';const pn=isP?type.replace('결제사_',''):'';
-        if(type==='무료배송')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:30px;"><span style="font-size:33px;font-weight:600;color:white;opacity:0.9;letter-spacing:-0.33px;">무료</span><span style="font-size:26px;font-weight:600;color:rgba(255,255,255,0.6);letter-spacing:-0.26px;">배송</span></div>`;
-        if(type==='사용자기재')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:30px;"><span style="font-size:26px;font-weight:600;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.3;">${line1||''}</span>${line2?`<span style="font-size:26px;font-weight:600;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.3;">${line2}</span>`:''}</div>`;
-        return`<div style="width:160px;height:160px;border-radius:200px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:30px;"><span style="font-size:33px;font-weight:600;color:${tc};opacity:0.9;letter-spacing:-0.33px;">${rate||''}</span><span style="font-size:26px;font-weight:600;color:${tc2};letter-spacing:-0.26px;">${isP?pn:type}</span></div>`;
+        const _payC={'결제사_카카오페이':'#ffeb00','결제사_네이버페이':'#00DE5A','결제사_토스페이':'#3182F6','결제사_오늘의집페이':'#00A1FF'};
+        const isP=type&&type.startsWith('결제사_');const bg=isP?(_payC[type]||'#ffeb00'):'#2f2f2f';
+        const isWB=type==='결제사_토스페이'||type==='결제사_오늘의집페이';
+        const rateTc=isP?(isWB?'#ffffff':'#2f2f2f'):'white';const rateFw=isP?(isWB?'500':'600'):'500';
+        const nameTc=isP?(isWB?'rgba(255,255,255,0.6)':'rgba(47,47,47,0.7)'):'rgba(255,255,255,0.6)';
+        const rawPn=isP?type.replace('결제사_',''):'';const payPn=isP?(rawPn.length>4?rawPn.replace('페이','<br>페이'):rawPn):'';
+        if(type==='무료배송')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:25px 30px 30px;text-align:center;"><span style="font-size:30px;font-weight:500;color:white;opacity:0.9;letter-spacing:-0.3px;">무료</span><span style="font-size:26px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:-0.26px;line-height:28px;">배송</span></div>`;
+        if(type==='사용자기재')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:30px;text-align:center;"><span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line1||''}</span>${line2?`<span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line2}</span>`:''}</div>`;
+        return`<div style="width:160px;height:160px;border-radius:200px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:25px 30px 30px;text-align:center;"><span style="font-size:30px;font-weight:${rateFw};color:${rateTc};opacity:0.9;letter-spacing:-0.3px;">${rate||''}</span><span style="font-size:26px;font-weight:400;color:${nameTc};letter-spacing:-0.26px;line-height:${isP?'29':'28'}px;">${isP?payPn:type}</span></div>`;
       };
       const badges=[];for(let i=1;i<=badgeCount;i++)badges.push(mkBadge(d[`badge${i}Type`],d[`badge${i}Rate`],d[`badge${i}Line1`],d[`badge${i}Line2`]));
       const badgeHTML=badges.length?`<div style="position:absolute;top:${d.bannerType==='없음'?'30px':'134px'};right:30px;display:flex;flex-direction:column;gap:8px;z-index:3;">${badges.join('')}</div>`:'';
-      const noticeHTML=d.showNotice==='on'?`<div style="position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:26px;font-weight:500;color:rgba(255,255,255,0.7);letter-spacing:-0.26px;z-index:4;">할인 혜택은 조기 종료될 수 있음</div>`:'';
+      const noticeHTML=d.showNotice==='on'?`<div style="position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:26px;font-weight:400;color:rgba(255,255,255,0.7);letter-spacing:-0.26px;z-index:4;">할인 혜택은 조기 종료될 수 있음</div>`:'';
       const dimHTML=d.showNotice==='on'?`<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 71%,rgba(0,0,0,0.2) 100%);pointer-events:none;z-index:1;"></div>`:'';
       return`<div style="width:750px;height:1000px;position:relative;overflow:hidden;font-family:'Pretendard',sans-serif;"><div style="position:absolute;inset:0;">${imgC}</div>${dimHTML}<div style="position:absolute;top:0;left:0;width:750px;z-index:2;">${bannerHTML}</div>${badgeHTML}${noticeHTML}</div>`;
     }

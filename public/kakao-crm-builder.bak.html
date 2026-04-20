@@ -71,7 +71,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .card-thumb { width: 26px; height: 34px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: #F0F0EE; color: #6B6B67; border: 1px solid #DDDDD8; }
 .card-meta { flex: 1; min-width: 0; }
 .card-name { font-size: 11.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-desc { font-size: 10px; color: var(--text-sub); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-desc { font-size: 10px; color: var(--text-sub); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-actions { display: flex; gap: 0; opacity: 0; transition: opacity 0.1s; }
 .card-item:hover .card-actions { opacity: 1; }
 .card-actions button { width: 20px; height: 20px; background: none; border: none; cursor: pointer; border-radius: 4px; color: var(--text-sub); font-size: 12px; display: flex; align-items: center; justify-content: center; }
@@ -240,7 +240,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
       <div class="preview-header">
         <div class="preview-header-left">
           <h3>미리보기</h3>
-          <span class="spec-tag">750 × 1000px · 캐러셀 와이드</span>
+          <span class="spec-tag">750×1000px · 캐러셀</span>
         </div>
         <div class="preview-actions">
           <button class="btn btn-ghost" onclick="exportPNG()">PNG 내보내기</button>
@@ -424,7 +424,7 @@ function renderSidebar(){
       if(selectedIdx===dragIdx)selectedIdx=newTi;
       else{if(dragIdx<selectedIdx)selectedIdx--;if(newTi<=selectedIdx)selectedIdx++;}
       dragIdx=-1;renderAll();};
-    item.innerHTML=`<span class="drag-handle">⠿</span><div class="card-thumb">${i+1}</div><div class="card-meta"><div class="card-name">${t.name}</div><div class="card-desc">${tl[origType]||''} ${t.id}, ${t.desc}</div></div><div class="card-actions"><button onclick="moveCard(event,${i},-1)">↑</button><button onclick="moveCard(event,${i},1)">↓</button><button onclick="delCard(event,${i})">×</button></div>`;
+    item.innerHTML=`<span class="drag-handle">⠿</span><div class="card-thumb">${i+1}</div><div class="card-meta"><div class="card-name">${t.id} ${t.name}</div><div class="card-desc">${t.desc}</div></div><div class="card-actions"><button onclick="moveCard(event,${i},-1)">↑</button><button onclick="moveCard(event,${i},1)">↓</button><button onclick="delCard(event,${i})">×</button></div>`;
     return item;
   }
   sections.forEach((type,si)=>{
@@ -477,8 +477,8 @@ function renderSidebar(){
 function renderEditor(){
   if(selectedIdx<0||selectedIdx>=cards.length)return;
   const card=cards[selectedIdx];const t=TEMPLATES.find(t=>t.id===card.templateId);
-  document.getElementById('editorTitle').textContent=t.name+' 편집';
-  document.getElementById('editorSub').textContent=t.id+' · '+t.desc;
+  document.getElementById('editorTitle').textContent=t.id+' '+t.name+' 편집';
+  document.getElementById('editorSub').textContent=t.desc;
   const body=document.getElementById('editorBody');body.innerHTML='';
   if(t.customEditor&&t.id==='A'){renderEditorA(card,body);return;}
   if(t.customEditor&&t.id==='B'){renderEditorB(card,body);return;}
