@@ -757,8 +757,11 @@ function handleImgFileB(e,cid,num){
     const boxId=num===1?'imgBoxB_'+cid:'imgBox2B_'+cid;
     showNukkiLoading(boxId);
     removeBackground(ev.target.result,false,result=>{
-      hideNukkiLoading(cid);
+      hideNukkiLoading(boxId);
       const finalImg=result||ev.target.result;card.data[key]=finalImg;
+      if(!result){
+        alert('누끼 처리에 실패했습니다. 원본 이미지를 사용합니다.\n가격강조형은 누끼 이미지가 권장되므로, 다시 시도하거나 누끼 처리된 이미지를 직접 업로드해주세요.');
+      }
       const thumbId=num===1?'imgThumbB_'+cid:'imgThumb2B_'+cid;
       const emptyId=num===1?'imgEmptyB_'+cid:'imgEmpty2B_'+cid;
       const thumb=document.getElementById(thumbId);const empty=document.getElementById(emptyId);
@@ -1099,12 +1102,22 @@ function handleImgFile(e,cid){
     if(d.imageType==='누끼컷'){
       const origImg=origSrc;
       d._img=origSrc;
+      // 누끼 처리 상태 관리: extract(renderEditor 트리거) 완료 후 로더 표시
+      let _nukkiDone=false;
       _applyImgAndExtract(d,()=>{
-        showNukkiLoading('imgBox_'+cid);
+        // extract 완료 후 renderEditor가 끝나서 DOM이 안정화된 시점
+        if(!_nukkiDone){
+          showNukkiLoading('imgBox_'+cid);
+        }
       });
       removeBackground(origImg,false,result=>{
+        _nukkiDone=true;
         hideNukkiLoading('imgBox_'+cid);
-        if(result)d._img=result;
+        if(result){
+          d._img=result;
+        }else{
+          alert('누끼 처리에 실패했습니다. 원본 이미지를 사용합니다.\n(remove.bg API 오류 가능성)');
+        }
         renderPreview();renderEditor();
       });
     }else{
