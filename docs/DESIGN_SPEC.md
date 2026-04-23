@@ -372,9 +372,20 @@
 - **CDN**: `https://cdn.jsdelivr.net/npm/@jaames/iro@5`
 - **구성**: Box(HSV) + Slider(Hue)
 - **크기**: 240px
-- **스포이드 기능**: 업로드된 이미지에서 클릭으로 컬러 추출 (URL 이미지는 CORS로 불가)
+- **스포이드 기능**: 브라우저 네이티브 `EyeDropper` API 사용. 화면 어디든 색상 추출 가능 (미리보기 이미지 외 영역도), 브라우저가 확대경 UI 자동 제공. Chrome/Edge/Opera 지원, Safari/Firefox는 alert로 안내. ESC로 취소.
 
-### 9-3. Google Fonts (Pretendard)
+### 9-3. EyeDropper API (네이티브 스포이드)
+- **브라우저 지원**: Chrome 95+, Edge 95+, Opera 81+
+- **미지원 브라우저**: Safari, Firefox → alert로 안내
+- **사용법**: `const result = await new EyeDropper().open();`
+- **반환 값**: `result.sRGBHex` ('#rrggbb' 형식)
+- **장점**:
+  - CORS 제약 없음 (화면 픽셀 직접 읽음)
+  - 확대경 UI 브라우저가 제공
+  - 화면 전체 (다른 탭/앱 포함) 색상 추출 가능
+- **구현**: `startEyedropper(edType, key, pid)` 함수 (async)
+
+### 9-4. Google Fonts (Pretendard)
 - **링크**: `https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap`
 - **굵기**: 400, 500, 600, 700
 
