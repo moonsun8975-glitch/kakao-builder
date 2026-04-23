@@ -13,11 +13,12 @@
 ## 📑 목차
 
 1. [ImageUploader](#1-imageuploader) - 이미지 업로드
-2. [ColorPicker](#2-colorpicker) - 컬러피커
-3. [공통 폼 요소](#3-공통-폼-요소) - 입력 필드, 버튼, 드롭다운, 모달
-4. [미리보기 카드](#4-미리보기-카드-구조) - 렌더링 구조
-5. [공통 유틸리티](#5-공통-유틸리티) - 렌더링 흐름, 상태 관리
-6. [디자인 토큰](#6-디자인-토큰) - CSS Variables
+2. [연출컷 이미지 핸들러 규칙](#-연출컷-이미지-핸들러-규칙-중요) - 위치/크기 조정 (중요)
+3. [ColorPicker](#2-colorpicker) - 컬러피커
+4. [공통 폼 요소](#3-공통-폼-요소) - 입력 필드, 버튼, 드롭다운, 모달
+5. [미리보기 카드](#4-미리보기-카드-구조) - 렌더링 구조
+6. [공통 유틸리티](#5-공통-유틸리티) - 렌더링 흐름, 상태 관리
+7. [디자인 토큰](#6-디자인-토큰) - CSS Variables
 
 ---
 
@@ -92,6 +93,98 @@
 - URL 입력: `handleImgUrl[템플릿ID]()`
   예: `handleImgUrl_B()`, `handleImgUrl_C()`
 - 누끼 처리: `removeBackground(imgUrl)` (공통)
+
+---
+
+## 🎬 연출컷 이미지 핸들러 규칙 (중요)
+
+연출컷(cover) 이미지를 사용하는 카드(A 연출컷 모드, B 카드)에서 이미지 위치/크기 조정 기능을 구현할 때 반드시 지켜야 하는 규칙.
+
+### 1. 최소 스케일 제한
+```javascript
+// ✅ 연출컷: 최소 1 (이미지가 영역보다 작아지지 않도록)
+card.data._imgScale = Math.max(1, Math.min(6, newScale));
+
+// ❌ 0.1로 하면 이미지가 영역 밖으로 작아져서 배경이 보임
+card.data._imgScale = Math.max(0.1, Math.min(6, newScale));
+```
+
+적용 위치:
+- dragDiv의 wheel 이벤트 (휠 줌)
+- 핸들 mousedown의 onHM (핸들 드래그 리사이즈)
+
+### 2. 드래그 위치 제한
+이미지 컨테이너 크기를 런타임에 측정해서 계산:
+
+```javascript
+const onMM = e => {
+  if(!isDragging) return;
+  card.data._imgX = startImgX + (e.clientX-startX) / 0.5;
+  card.data._imgY = startImgY + (e.clientY-startY) / 0.5;
+
+  const el = document.getElementById('cardImg_'+cid);
+  // 부모 컨테이너 크기 측정 (카드마다 이미지 영역이 다름)
+  const pw = el && el.parentElement ? el.parentElement.offsetWidth : 750;
+  const ph = el && el.parentElement ? el.parentElement.offsetHeight : 1000;
+  const s = card.data._imgScale || 1;
+  const maxX = pw*(s-1)/2, maxY = ph*(s-1)/2;
+
+  card.data._imgX = Math.max(-maxX, Math.min(maxX, card.data._imgX));
+  card.data._imgY = Math.max(-maxY, Math.min(maxY, card.data._imgY));
+
+  if(el) el.style.transform = `translate(${card.data._imgX}px,${card.data._imgY}px) scale(${card.data._imgScale||1})`;
+};
+```
+
+**왜 parentElement 크기를 써야 하는가?**
+- A 카드: 이미지 컨테이너 = 750×1000 (카드 전체)
+- B 카드 (상품 1개): 이미지 컨테이너 ≈ 630×500
+- B 카드 (상품 2개): 이미지 컨테이너 = 240×(가변)
+
+공식을 `maxX=750*(s-1)/2`로 고정하면 B처럼 더 작은 영역의 카드에서는 이미지가 영역 밖으로 벗어남.
+
+### 3. 핸들 mousedown에 blockClick 추가 (필수)
+드래그/핸들 조작 후 click 이벤트가 카드 wrap으로 버블링되면 `selectCard`가 호출되어 `_imgEditing`이 자동으로 false가 되는 버그 발생.
+
+```javascript
+h.addEventListener('mousedown', e => {
+  e.preventDefault(); e.stopPropagation();
+  const sx = e.clientX, sy = e.clientY, os = card.data._imgScale || 1;
+
+  // ✅ blockClick 필수 추가
+  const blockClick = ev => {
+    ev.stopPropagation();
+    document.removeEventListener('click', blockClick, true);
+  };
+  document.addEventListener('click', blockClick, true);
+
+  const onHM = ev => { /* 리사이즈 로직 */ };
+  const onHU = () => {
+    document.removeEventListener('mousemove', onHM);
+    document.removeEventListener('mouseup', onHU);
+  };
+  document.addEventListener('mousemove', onHM);
+  document.addEventListener('mouseup', onHU);
+});
+```
+
+dragDiv의 mousedown에도 동일하게 blockClick 필요.
+
+### 4. object-fit 규칙
+- **연출컷** (배경 이미지 스타일): `object-fit: cover`
+- **누끼컷** (배경 투명한 PNG): `object-fit: contain`
+
+편집 폼 썸네일과 미리보기 카드 **둘 다** 동일한 object-fit 적용.
+
+### 5. 체크리스트 (새 연출컷 카드 만들 때)
+- [ ] `_imgScale: 1` 기본값 (def 객체)
+- [ ] `_imgX: 0, _imgY: 0` 기본값
+- [ ] `_imgEditing: false` 기본값
+- [ ] 드래그 onMM: parentElement 기반 위치 제한
+- [ ] 휠 wheel: `Math.max(1, Math.min(6, ...))`
+- [ ] 핸들 mousedown: 최소 스케일 1 + blockClick
+- [ ] dragDiv mousedown: blockClick
+- [ ] object-fit: cover (편집 썸네일 + 미리보기)
 
 ---
 
