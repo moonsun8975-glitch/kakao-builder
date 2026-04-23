@@ -554,7 +554,7 @@ function renderEditorA(card,body){
     const labelRow=`<label>${label}</label>`;
     const hint=opts?.hint||'';
     const edType=key==='_gradColor'?'grad':'btn';
-    return`${labelRow}<div style="display:flex;align-items:center;cursor:pointer;" onclick="toggleIro('${pid}','${key}')"><div class="iro-dot" data-iro="${pid}" style="width:20px;height:20px;border-radius:50%;border:1px solid #ddd;background:${val};flex-shrink:0;margin-right:8px;"></div><span style="font-size:12px;color:var(--text-sub);margin-right:4px;">#</span><input class="iro-hex" data-iro="${pid}" type="text" value="${esc(hex)}" maxlength="6" style="width:58px;font-family:monospace;font-size:11px;padding:4px 6px;margin-right:8px;" onclick="event.stopPropagation()" oninput="onIroHex('${key}','${pid}',this)">${autoBtn}</div><div id="${pid}" data-ed-type="${edType}" data-key="${key}" style="display:none;margin-top:8px;background:white;border:1px solid var(--border);border-radius:8px;padding:12px;"><div class="iro-picker-wrap" id="${pid}_iro"></div><div class="iro-slider-row" id="${pid}_row" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-top:10px;">${_edBtn}<button style="flex-shrink:0;margin-left:auto;font-size:11px;font-family:var(--font);padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#2D6EE8;color:white;font-weight:600;" onclick="event.stopPropagation();document.getElementById('${pid}').style.display='none';">완료</button></div></div>${hint}`;};
+    return`${labelRow}<div style="display:flex;align-items:center;cursor:pointer;" onclick="toggleIro('${pid}','${key}')"><div class="iro-dot" data-iro="${pid}" style="width:20px;height:20px;border-radius:50%;border:1px solid #ddd;background:${val};flex-shrink:0;margin-right:8px;"></div><span style="font-size:12px;color:var(--text-sub);margin-right:4px;">#</span><input class="iro-hex" data-iro="${pid}" type="text" value="${esc(hex)}" maxlength="6" style="width:58px;font-family:monospace;font-size:11px;padding:4px 6px;margin-right:8px;" onclick="event.stopPropagation()" oninput="onIroHex('${key}','${pid}',this)">${autoBtn}</div><div id="${pid}" data-ed-type="${edType}" data-key="${key}" style="display:none;margin-top:8px;background:white;border:1px solid var(--border);border-radius:8px;padding:12px;"><div class="iro-picker-wrap" id="${pid}_iro"></div><div class="iro-slider-row" id="${pid}_row"></div><div class="iro-action-row" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-top:10px;">${_edBtn}<button style="flex-shrink:0;margin-left:auto;font-size:11px;font-family:var(--font);padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#2D6EE8;color:white;font-weight:600;" onclick="event.stopPropagation();document.getElementById('${pid}').style.display='none';">완료</button></div></div>${hint}`;};
 
   // 이미지 타입
   mk(`<label>이미지 타입</label><select onchange="_switchImageTypeA(cards[selectedIdx].data,this.value);updateField('imageType',this.value);renderEditor()"><option value="연출컷"${d.imageType==='연출컷'?' selected':''}>연출컷</option><option value="누끼컷"${d.imageType==='누끼컷'?' selected':''}>누끼컷</option></select>`);
@@ -689,7 +689,7 @@ function renderEditorC(card,body){
     const _edBtn=_canEyedrop?`<button class="iro-ed-btn" onclick="event.stopPropagation();startEyedropper('btn','${key}','${pid}')" title="이미지에서 컬러 추출"><svg width="11" height="14" viewBox="0 0 92 242" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M46 0C63.0146 0 65.6201 16.1325 64.7959 22.4531V65.3652H84C88.4183 65.3652 92 68.947 92 73.3652V98.2803C92 102.699 88.4183 106.28 84 106.28H73.6992V213.06C73.6992 235.813 55.233 241.834 46 242C36.767 241.834 18.3008 235.813 18.3008 213.06V106.28H8C3.58172 106.28 0 102.699 0 98.2803V73.3652C0 68.947 3.58172 65.3652 8 65.3652H27.2041V22.4531C26.3799 16.1325 28.9854 0 46 0ZM32.0078 107V212.354C31.8413 217.569 34.4062 228 46 228C57.5935 228 60.1587 217.569 59.9922 212.354V107H32.0078Z"/></svg></button>`:'';
     const autoBtn=opts?.autoKey?`<button data-autokey="${opts.autoKey}" style="font-size:11px;font-family:var(--font);border:${opts.isAuto?'none':'1px solid var(--border-strong)'};padding:3px 8px;border-radius:4px;cursor:pointer;${opts.isAuto?'background:var(--y200);color:var(--kakao-brown);':'background:var(--border);color:var(--text-sub);'}" onclick="event.stopPropagation();${opts.autoAction}">자동</button>`:'';
     const hint=opts?.hint||'';const edType='btn';
-    return`<label>${label}</label><div style="display:flex;align-items:center;cursor:pointer;" onclick="toggleIro('${pid}','${key}')"><div class="iro-dot" data-iro="${pid}" style="width:20px;height:20px;border-radius:50%;border:1px solid #ddd;background:${val};flex-shrink:0;margin-right:8px;"></div><span style="font-size:12px;color:var(--text-sub);margin-right:4px;">#</span><input class="iro-hex" data-iro="${pid}" type="text" value="${esc(hex)}" maxlength="6" style="width:58px;font-family:monospace;font-size:11px;padding:4px 6px;margin-right:8px;" onclick="event.stopPropagation()" oninput="onIroHex('${key}','${pid}',this)">${autoBtn}</div><div id="${pid}" data-ed-type="${edType}" data-key="${key}" style="display:none;margin-top:8px;background:white;border:1px solid var(--border);border-radius:8px;padding:12px;"><div class="iro-picker-wrap" id="${pid}_iro"></div><div class="iro-slider-row" id="${pid}_row" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-top:10px;">${_edBtn}<button style="flex-shrink:0;margin-left:auto;font-size:11px;font-family:var(--font);padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#2D6EE8;color:white;font-weight:600;" onclick="event.stopPropagation();document.getElementById('${pid}').style.display='none';">완료</button></div></div>${hint}`;};
+    return`<label>${label}</label><div style="display:flex;align-items:center;cursor:pointer;" onclick="toggleIro('${pid}','${key}')"><div class="iro-dot" data-iro="${pid}" style="width:20px;height:20px;border-radius:50%;border:1px solid #ddd;background:${val};flex-shrink:0;margin-right:8px;"></div><span style="font-size:12px;color:var(--text-sub);margin-right:4px;">#</span><input class="iro-hex" data-iro="${pid}" type="text" value="${esc(hex)}" maxlength="6" style="width:58px;font-family:monospace;font-size:11px;padding:4px 6px;margin-right:8px;" onclick="event.stopPropagation()" oninput="onIroHex('${key}','${pid}',this)">${autoBtn}</div><div id="${pid}" data-ed-type="${edType}" data-key="${key}" style="display:none;margin-top:8px;background:white;border:1px solid var(--border);border-radius:8px;padding:12px;"><div class="iro-picker-wrap" id="${pid}_iro"></div><div class="iro-slider-row" id="${pid}_row"></div><div class="iro-action-row" style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-top:10px;">${_edBtn}<button style="flex-shrink:0;margin-left:auto;font-size:11px;font-family:var(--font);padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#2D6EE8;color:white;font-weight:600;" onclick="event.stopPropagation();document.getElementById('${pid}').style.display='none';">완료</button></div></div>${hint}`;};
   // 이미지 업로드
   const hasImg=!!d._img;const editing=d._imgEditing;
   const imgField=document.createElement('div');imgField.className='field';
@@ -1001,7 +1001,7 @@ function showImgHandles2B(cid){
 let _iroInstances={};
 function toggleIro(pid,key){
   const el=document.getElementById(pid);if(!el)return;
-  if(activeColorPicker&&activeColorPicker!==pid){const prev=document.getElementById(activeColorPicker);if(prev)prev.style.display='none';if(_iroInstances[activeColorPicker]){_iroInstances[activeColorPicker].off('color:change');delete _iroInstances[activeColorPicker];}}
+  if(activeColorPicker&&activeColorPicker!==pid){const prev=document.getElementById(activeColorPicker);if(prev)prev.style.display='none';const prevIro=document.getElementById(activeColorPicker+'_iro');if(prevIro)prevIro.innerHTML='';const prevSliderRow=document.getElementById(activeColorPicker+'_row');if(prevSliderRow)prevSliderRow.innerHTML='';if(_iroInstances[activeColorPicker]){_iroInstances[activeColorPicker].off('color:change');delete _iroInstances[activeColorPicker];}}
   if(el.style.display==='none'){
     el.style.display='block';activeColorPicker=pid;
     const iroDiv=document.getElementById(pid+'_iro');if(iroDiv)iroDiv.innerHTML='';
@@ -1025,7 +1025,7 @@ function toggleIro(pid,key){
       const slider=iroDiv.querySelector('.IroSlider');
       if(slider){sliderRow.insertBefore(slider,sliderRow.firstChild);}
     },30);
-  }else{el.style.display='none';const iroDiv=document.getElementById(pid+'_iro');if(iroDiv)iroDiv.innerHTML='';if(_iroInstances[pid]){delete _iroInstances[pid];}activeColorPicker=null;}
+  }else{el.style.display='none';const iroDiv=document.getElementById(pid+'_iro');if(iroDiv)iroDiv.innerHTML='';const sliderRow=document.getElementById(pid+'_row');if(sliderRow)sliderRow.innerHTML='';if(_iroInstances[pid]){delete _iroInstances[pid];}activeColorPicker=null;}
 }
 function onIroHex(key,pid,el){
   const v=el.value.replace(/[^0-9a-fA-F]/g,'');el.value=v;
@@ -1041,53 +1041,64 @@ function onIroHex(key,pid,el){
     renderPreview();renderSidebar();
   }
 }
-function startEyedropper(edType,key,pid){
+// ============================================
+// Eyedropper: 브라우저 네이티브 EyeDropper API 사용
+// ============================================
+async function startEyedropper(edType, key, pid){
   if(selectedIdx<0)return;
-  const card=cards[selectedIdx];
-  if(!card||!card.data._img){alert('이미지를 먼저 업로드해주세요.');return;}
-  const ov=document.createElement('div');
-  const _spuitSvg=`<svg xmlns='http://www.w3.org/2000/svg' width='20' height='53' viewBox='0 0 92 242'><path d='M46 0C63.0146 0 65.6201 16.1325 64.7959 22.4531V65.3652H84C88.4183 65.3652 92 68.947 92 73.3652V98.2803C92 102.699 88.4183 106.28 84 106.28H73.6992V213.06C73.6992 235.813 55.233 241.834 46 242C36.767 241.834 18.3008 235.813 18.3008 213.06V106.28H8C3.58172 106.28 0 102.699 0 98.2803V73.3652C0 68.947 3.58172 65.3652 8 65.3652H27.2041V22.4531C26.3799 16.1325 28.9854 0 46 0ZM32.0078 107V212.354C31.8413 217.569 34.4062 228 46 228C57.5935 228 60.1587 217.569 59.9922 212.354V107H32.0078Z' fill='white' stroke='black' stroke-width='8' stroke-opacity='0.6'/></svg>`;
-  const _spuitUrl=`data:image/svg+xml,${encodeURIComponent(_spuitSvg)}`;
-  ov.style.cssText=`position:fixed;inset:0;cursor:url(${_spuitUrl}) 10 50, crosshair;z-index:9999;`;
-  const tip=document.createElement('div');
-  tip.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-family:var(--font);pointer-events:none;z-index:10000;white-space:nowrap;';
-  tip.textContent='미리보기 이미지에서 추출할 컬러를 클릭하세요 · ESC로 취소';
-  document.body.appendChild(ov);document.body.appendChild(tip);
-  function cleanup(){ov.remove();tip.remove();document.removeEventListener('keydown',onEsc);}
-  ov.addEventListener('click',e=>{
-    e.preventDefault();e.stopPropagation();
-    const cardEls=document.querySelectorAll('.card-render');
-    const cardEl=cardEls[selectedIdx];
-    if(!cardEl){cleanup();return;}
-    const cardRect=cardEl.getBoundingClientRect();
-    const relX=(e.clientX-cardRect.left)/0.5;
-    const relY=(e.clientY-cardRect.top)/0.5;
-    if(relX<0||relY<0||relX>750||relY>1000){cleanup();return;}
-    const tempImg=new Image();
-    tempImg.crossOrigin='anonymous';
-    tempImg.onload=function(){
+
+  // EyeDropper API 지원 체크
+  if(!('EyeDropper' in window)){
+    alert('이 브라우저는 스포이드 기능을 지원하지 않습니다.\nChrome, Edge, Opera를 사용해주세요.');
+    return;
+  }
+
+  try{
+    const eyeDropper = new EyeDropper();
+    const result = await eyeDropper.open();
+    const hex = result.sRGBHex; // '#rrggbb' 형식
+
+    const dd = cards[selectedIdx].data;
+
+    // auto 플래그 해제
+    if(key==='btnColor') dd._btnColorAuto=false;
+    if(key==='_gradColor') dd._gradColorAuto=false;
+    if(key==='bgColor') dd._bgColorAuto=false;
+
+    // 색 적용
+    dd[key] = hex;
+
+    // iro.js 인스턴스에도 반영 (컬러피커가 열려있으면)
+    if(_iroInstances[pid]){
       try{
-        const canvas=document.createElement('canvas');canvas.width=tempImg.width;canvas.height=tempImg.height;
-        const ctx=canvas.getContext('2d');ctx.drawImage(tempImg,0,0);
-        const sx=tempImg.width/750,sy=tempImg.height/1000;
-        const px=ctx.getImageData(Math.max(0,Math.min(Math.floor(relX*sx),canvas.width-1)),Math.max(0,Math.min(Math.floor(relY*sy),canvas.height-1)),1,1).data;
-        const hex='#'+[px[0],px[1],px[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
-        const dd=card.data;
-        if(edType==='btn'){dd.btnColor=hex;dd._btnColorAuto=false;}else{dd._gradColor=hex;dd._gradColorAuto=false;}
-        const dot=document.querySelector(`.iro-dot[data-iro="${pid}"]`);if(dot)dot.style.background=hex;
-        const inp=document.querySelector(`.iro-hex[data-iro="${pid}"]`);if(inp)inp.value=hex.replace('#','');
-        if(_iroInstances[pid])try{_iroInstances[pid].color.hexString=hex;}catch(x){}
-        autoUpdateBtnColor(dd);cleanup();renderPreview();renderSidebar();
-      }catch(err){
-        cleanup();
-        alert('이미지에서 컬러를 추출할 수 없어요.\n컬러피커의 HEX 값으로 직접 설정해 주세요.');
-      }
-    };
-    tempImg.onerror=()=>{cleanup();alert('이미지를 불러올 수 없어요.\n다시 시도해 주세요.');};
-    tempImg.src=card.data._img;
-  });
-  const onEsc=e=>{if(e.key==='Escape')cleanup();};
-  document.addEventListener('keydown',onEsc);
+        _iroInstances[pid].color.hexString = hex;
+      }catch(e){}
+    }
+
+    // 사이드바 dot과 input 업데이트
+    const dot = document.querySelector(`.iro-dot[data-iro="${pid}"]`);
+    if(dot) dot.style.background = hex;
+    const inp = document.querySelector(`.iro-hex[data-iro="${pid}"]`);
+    if(inp) inp.value = hex.replace('#','');
+
+    // 전체 렌더링
+    renderPreview();
+    renderSidebar();
+
+    // 자동 버튼 스타일 업데이트
+    document.querySelectorAll('[data-autokey]').forEach(btn=>{
+      const ak = btn.dataset.autokey;
+      const v = dd[ak];
+      btn.style.background = v?'var(--y200)':'var(--border)';
+      btn.style.color = v?'var(--kakao-brown)':'var(--text-sub)';
+      btn.style.border = v?'none':'1px solid var(--border-strong)';
+    });
+  }catch(e){
+    // 사용자가 ESC로 취소한 경우: 조용히 무시
+    if(e.name !== 'AbortError'){
+      console.error('EyeDropper error:', e);
+    }
+  }
 }
 
 /* ── 배경 제거 API ── */
