@@ -12,13 +12,73 @@
 
 ## 📑 목차
 
-1. [ImageUploader](#1-imageuploader) - 이미지 업로드
-2. [연출컷 이미지 핸들러 규칙](#-연출컷-이미지-핸들러-규칙-중요) - 위치/크기 조정 (중요)
-3. [ColorPicker](#2-colorpicker) - 컬러피커
-4. [공통 폼 요소](#3-공통-폼-요소) - 입력 필드, 버튼, 드롭다운, 모달
-5. [미리보기 카드](#4-미리보기-카드-구조) - 렌더링 구조
-6. [공통 유틸리티](#5-공통-유틸리티) - 렌더링 흐름, 상태 관리
-7. [디자인 토큰](#6-디자인-토큰) - CSS Variables
+1. [빌더 시스템 컬러 토큰](#-빌더-시스템-컬러-토큰)
+2. [토글 스위치 컴포넌트](#️-토글-스위치-컴포넌트)
+3. [ImageUploader](#1-imageuploader) - 이미지 업로드
+4. [연출컷 이미지 핸들러 규칙](#-연출컷-이미지-핸들러-규칙-중요) - 위치/크기 조정 (중요)
+5. [이미지 핸들러 표준 시그니처](#️-이미지-핸들러-표준-시그니처) - handleImg 패턴
+6. [자동 컬러 추출 로직 흐름](#-자동-컬러-추출-로직-흐름) - extractDominantColor
+7. [ColorPicker](#2-colorpicker) - 컬러피커
+8. [공통 폼 요소](#3-공통-폼-요소) - 입력 필드, 버튼, 드롭다운, 모달
+9. [미리보기 카드](#4-미리보기-카드-구조) - 렌더링 구조
+10. [공통 유틸리티](#5-공통-유틸리티) - 렌더링 흐름, 상태 관리
+11. [디자인 토큰](#6-디자인-토큰) - CSS Variables
+
+---
+
+## 🎨 빌더 시스템 컬러 토큰
+
+빌더 UI에 사용되는 컬러는 :root에 CSS 변수로 정의되어 있다. 새로운 빌더 UI 요소를 만들 때 반드시 이 변수를 사용한다.
+
+### 노란색 계열
+```css
+--y100: #FFED94    /* 가장 밝은 노랑 */
+--y200: #FFE033    /* 메인 노랑 (중요한 액션) */
+--y300: #F4D01F    /* 진한 노랑 (호버, 보더) */
+--yellow:      #FFE033  /* y200 별칭 */
+--yellow-dark: #F4D01F  /* y300 별칭 */
+```
+
+### 사용 위치 가이드
+| 컬러 | 사용처 예시 |
+|------|------------|
+| `--y100` | 선택된 카드 배경, 호버 박스 배경, 템플릿 옵션 선택 |
+| `--y200` | 카드 개수 뱃지, 전체복사 버튼, 자동활성 버튼, 미리보기 카드 선택, 토글 ON 상태 |
+| `--y300` | 호버 보더, 버튼 hover, focus 보더 |
+
+### 원칙
+- 노란색 = 빌더 UI의 "활성 상태/중요 액션" 시그널
+- 카카오 브랜드 노랑 (`#FEE500`)은 미리보기 카드 안의 컬러 (사용자 선택용 컬러피커 기본값)으로 구분
+- 하드코딩 대신 변수 사용: `background: var(--y200)`
+
+---
+
+## 🎚️ 토글 스위치 컴포넌트
+
+on/off 옵션은 select가 아닌 토글 스위치로 통일한다.
+
+### 사용 패턴
+
+```html
+<!-- 라벨 위, 토글 아래 (컬러피커 스타일과 동일한 두 줄 구조) -->
+<label>옵션 이름</label>
+<label class="switch-toggle">
+  <input type="checkbox" 
+    ${currentValue ? 'checked' : ''} 
+    onchange="updateField('fieldKey', this.checked ? 'on' : 'off'); renderPreview()">
+  <span class="slider"></span>
+</label>
+```
+
+### CSS 정의 (이미 :root 다음에 정의됨)
+- `.switch-toggle`: 44px × 24px 고정 크기
+- ON 시 배경: `--y200` (시스템 메인 노랑)
+- OFF 시 배경: `#E0E0E0`
+
+### 원칙
+- on/off 두 가지 상태만 있는 옵션은 토글 사용 (select 금지)
+- 라벨 위, 토글 아래의 두 줄 구조 (컬러피커와 일관성)
+- 데이터는 'on'/'off' 문자열 또는 boolean 모두 가능
 
 ---
 
@@ -93,6 +153,24 @@
 - URL 입력: `handleImgUrl[템플릿ID]()`
   예: `handleImgUrl_B()`, `handleImgUrl_C()`
 - 누끼 처리: `removeBackground(imgUrl)` (공통)
+
+### ⚠️ 핸들러에서 hover overlay 표시 갱신 필수
+
+이미지 업로드/URL 입력 핸들러는 박스 안의 thumb, empty, controls 외에 **hover overlay** display도 함께 갱신해야 한다.
+
+```javascript
+function handleImgFileX(e, cid) {
+  // ... 기존 처리 ...
+  
+  // 필수: hover overlay 표시 갱신
+  const _box = document.getElementById('imgBoxX_' + cid);
+  const _ov = _box ? _box.querySelector('.img-hover-overlay') : null;
+  if (_ov) _ov.style.display = 'flex';  // 이미지 있을 때
+  // 이미지 없을 때는 'none'
+}
+```
+
+이걸 빼면 처음 그려진 overlay의 `display:none` 상태가 유지되어, 이미지 업로드 후에도 hover 시 "다른 이미지 업로드" 안내가 뜨지 않는 버그 발생.
 
 ---
 
@@ -185,6 +263,118 @@ dragDiv의 mousedown에도 동일하게 blockClick 필요.
 - [ ] 핸들 mousedown: 최소 스케일 1 + blockClick
 - [ ] dragDiv mousedown: blockClick
 - [ ] object-fit: cover (편집 썸네일 + 미리보기)
+
+---
+
+## 🖼️ 이미지 핸들러 표준 시그니처
+
+새 카드를 만들 때 이미지 업로드/URL 핸들러는 반드시 이 패턴을 따른다.
+
+### 1. 함수 이름 규칙
+
+| 핸들러 | 패턴 | 예시 |
+|--------|------|------|
+| 파일 업로드 | `handleImgFile{X}` | `handleImgFileC`, `handleImgFileB` |
+| URL 입력 | `handleImgUrl{X}` | `handleImgUrlC`, `handleImgUrlB` |
+| 위치 초기화 | `resetImg{X}` | `resetImgC`, `resetImgB` |
+| 위치 조정 토글 | `toggleImgEdit{X}` | `toggleImgEditC`, `toggleImgEditB` |
+| 핸들 표시 | `showImgHandles{X}` | `showImgHandlesC`, `showImgHandlesB` |
+
+이미지가 여러 개인 카드는 함수 이름에 숫자 또는 num 파라미터로 구분 (예: `handleImgFileB(e, cid, num)`).
+
+### 2. 파라미터 표준
+
+```javascript
+// 파일 업로드
+function handleImgFileX(e, cid) {
+  // e: input change event
+  // cid: 카드 id
+}
+
+// URL 입력
+function handleImgUrlX(url, cid) {
+  // url: 입력된 URL 문자열
+  // cid: 카드 id
+}
+
+// 이미지 여러 개일 경우 num 추가
+function handleImgFileB(e, cid, num) {
+  // num: 1 또는 2 (이미지 번호)
+}
+```
+
+### 3. 작업 순서 (필수 7단계)
+
+```javascript
+function handleImgFileX(e, cid) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const card = cards.find(c => c.id === cid); if (!card) return;
+    
+    // 1. 데이터 저장 (이미지 + 위치 초기화)
+    card.data._img = ev.target.result;
+    card.data._imgX = 0; card.data._imgY = 0; card.data._imgScale = 1;
+    
+    // 2. 썸네일 표시
+    const thumb = document.getElementById('imgThumbX_' + cid);
+    if (thumb) { thumb.src = ev.target.result; thumb.style.display = 'block'; }
+    
+    // 3. empty (빈 상태) 숨기기
+    const empty = document.getElementById('imgEmptyX_' + cid);
+    if (empty) empty.style.display = 'none';
+    
+    // 4. controls (조정 버튼) 표시
+    const ctrl = document.getElementById('imgControlsX_' + cid);
+    if (ctrl) ctrl.style.display = 'flex';
+    
+    // 5. ⚠️ hover overlay 표시 (놓치기 쉬운 부분!)
+    const _box = document.getElementById('imgBoxX_' + cid);
+    const _ov = _box ? _box.querySelector('.img-hover-overlay') : null;
+    if (_ov) _ov.style.display = 'flex';
+    
+    // 6. (선택) 자동 컬러 추출 트리거
+    // if (card.data._btnColorAuto) extractDominantColor(...);
+    
+    // 7. 미리보기 갱신
+    renderPreview();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+```
+
+URL 핸들러는 reader 없이 url 직접 사용하되 같은 순서를 따름.
+
+### 4. 자주 놓치는 실수
+
+- ❌ hover overlay display 갱신 누락 → 이미지 업로드 후 호버 안내 안 뜨는 버그
+- ❌ data 저장만 하고 DOM 업데이트 누락 → 썸네일 안 바뀜
+- ❌ `e.target.value = ''` 누락 → 같은 파일 재업로드 안 됨
+- ❌ `renderPreview()` 누락 → 미리보기 카드 안 바뀜
+
+---
+
+## 🎨 자동 컬러 추출 로직 흐름
+
+이미지에서 자동으로 컬러를 추출해서 미리보기에 적용하는 패턴. A 카드의 `btnColor`, `_gradColor`, `bgColor` 자동 추출에 사용됨.
+
+### 1. 데이터 구조
+
+```javascript
+{
+  // 사용자/자동이 만든 최종 적용값
+  btnColor: '#2f8de2',
+  
+  // 자동 추출된 원본값 (_auto 접두사)
+  _autoBtnBaseColor: '#3a8de5',
+  
+  // 자동 모드 활성화 플래그 (_xxxAuto 접미사)
+  _btnColorAuto: true,  // true면 이미지 변경 시 자동 갱신
+}
+```
+
+### 2. 동작 흐름
 
 ---
 

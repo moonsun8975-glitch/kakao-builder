@@ -292,7 +292,7 @@ const DEFAULT_BTN_COLOR='#00A1FF';
 const TEMPLATES=[
   {id:'A',name:'브랜드형',desc:'브랜드이미지+혜택+버튼',type:'cover',customEditor:true,def:{imageType:'연출컷',benefitCount:'2개',sub:'프리미엄 컬렉션',headline:'최대 56%',headline2:'할인',benefit1Label:'혜택 1',benefit1Value:'무료배송',benefit2Label:'혜택 2',benefit2Value:'쿠폰 증정',benefit3Label:'혜택 3',benefit3Value:'단독 할인',btnText:'할인받고 구매하기',btnArrow:'on',bgColor:'#1A1A18',btnColor:'#2f8de2',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false,_gradColor:'',_autoGradColor:'',_btnColorAuto:true}},
   {id:'B',name:'가격강조형',desc:'제품이미지+가격+버튼',type:'cover',customEditor:true,def:{headline:'반값딜 알림 도착',showDate:'off',date:'8/22(금)',time:'오전 9시',product1Date:'8/22(금)',product1Time:'오전 9시',product2Date:'8/22(금)',product2Time:'오전 9시',productCount:'1개',product1Brand:'브랜드명',product1Name:'제품명',product1Rate:'50%',product1Price:'20,000원',product1Orig:'40,000원',product2Brand:'브랜드명',product2Name:'제품명',product2Rate:'50%',product2Price:'20,000원',product2Orig:'40,000원',btnText:'반값딜 입장하기',btnArrow:'on',btnColor:'#00A1FF',bgColor:'#f5f5f5',_img:'',_img2:'',_imgX:0,_imgY:0,_imgScale:1,_img2X:0,_img2Y:0,_img2Scale:1,_imgEditing:false,_img2Editing:false,_btnColorAuto:false}},
-  {id:'C',name:'혜택형',desc:'상단띠배너+배지',type:'inner',customEditor:true,def:{bannerType:'브랜드형',bannerText:'브랜드명',bannerColor:'#00A1FF',tab1:'스페셜딜',tab2:'특가더보기',tab3:'라이브',tab4:'오마트',tab5:'콜라보마켓',tabCount:'5',activeTab:'1',badge1Type:'즉시할인',badge1Rate:'57%',badge2Type:'상품쿠폰',badge2Rate:'15%',badge3Type:'결제사_카카오페이',badge3Rate:'7%',badgeCount:'3개',badge1Line1:'혜택1',badge1Line2:'',badge2Line1:'혜택2',badge2Line2:'',badge3Line1:'혜택3',badge3Line2:'',showNotice:'on',noticeText:'할인 혜택은 조기 종료될 수 있음',_img:'',_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false}},
+  {id:'C',name:'혜택형',desc:'상단띠배너+배지',type:'inner',customEditor:true,def:{bannerType:'브랜드형',bannerText:'브랜드명',bannerColor:'#00A1FF',tab1:'스페셜딜',tab2:'특가더보기',tab3:'라이브',tab4:'오마트',tab5:'콜라보마켓',tabCount:'5',activeTab:'1',badge1Type:'즉시할인',badge1Rate:'57%',badge2Type:'상품쿠폰',badge2Rate:'15%',badge3Type:'결제사_카카오페이',badge3Rate:'7%',badgeCount:'3개',badge1Line1:'혜택1',badge1Line2:'',badge2Line1:'혜택2',badge2Line2:'',badge3Line1:'혜택3',badge3Line2:'',showNotice:'on',noticeText:'할인 혜택은 조기 종료될 수 있음',_img:'',darkImg:false,_imgX:0,_imgY:0,_imgScale:1,_imgEditing:false}},
   {id:'D',name:'제품리스트형',desc:'상단띠배너+제품정보',type:'inner',fields:['brand','productName','discountRate','salePrice','originalPrice','noticeText','btnText','bgColor'],def:{brand:'리바트',productName:'사선 컷팅 테이프 크리너 9종',discountRate:'56%',salePrice:'24,900원',originalPrice:'46,800원',noticeText:'일부 상품은 쿠폰 적용이 제한될 수 있습니다.',btnText:'지금 구매하기',bgColor:'#FFFFFF'}},
   {id:'E',name:'쿠폰형',desc:'쿠폰 최대 3개',type:'inner',fields:['headline','coupon1Name','coupon1Value','coupon1Detail','noticeText'],def:{headline:'다운로드 쿠폰',coupon1Name:'라이브 단 하루 25% 쿠폰',coupon1Value:'25%',coupon1Detail:'최소 50,000원 이상 구매 시 사용 가능',noticeText:'쿠폰 다운로드 기간: 오늘 00시~내일 00시'}},
   {id:'F',name:'쿠폰형',desc:'쿠폰 최대 3개',type:'inner',fields:['headline','coupon1Name','coupon1Value','coupon2Name','coupon2Value','noticeText'],def:{headline:'중복 사용 가능',coupon1Name:'신규 회원 10% 쿠폰',coupon1Value:'10%',coupon2Name:'브랜드 단독 15% 쿠폰',coupon2Value:'15%',noticeText:'쿠폰 중복 사용 가능'}},
@@ -735,8 +735,8 @@ function renderEditorC(card,body){
     }
     body.appendChild(tabListDiv);
   }
-  // 배지 개수
-  mk(`<label>배지 개수</label><select onchange="_syncBadgeTypes(cards[selectedIdx].data,this.value);updateField('badgeCount',this.value);renderEditor()"><option value="1개"${d.badgeCount==='1개'?' selected':''}>1개</option><option value="2개"${d.badgeCount==='2개'?' selected':''}>2개</option><option value="3개"${d.badgeCount==='3개'?' selected':''}>3개</option><option value="없음"${d.badgeCount==='없음'?' selected':''}>없음</option></select>`);
+  // 배지 개수 + 배지 밝게 토글 (가로 배치)
+  mk(`<div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;"><div><label>배지 개수</label><select onchange="_syncBadgeTypes(cards[selectedIdx].data,this.value);updateField('badgeCount',this.value);renderEditor()"><option value="1개"${d.badgeCount==='1개'?' selected':''}>1개</option><option value="2개"${d.badgeCount==='2개'?' selected':''}>2개</option><option value="3개"${d.badgeCount==='3개'?' selected':''}>3개</option><option value="없음"${d.badgeCount==='없음'?' selected':''}>없음</option></select></div><div><label>배지 밝게</label><label class="switch-toggle"><input type="checkbox" ${d.darkImg?'checked':''} onchange="updateField('darkImg',this.checked);renderPreview()"><span class="slider"></span></label></div></div>`);
   const bc=d.badgeCount==='없음'?0:parseInt(d.badgeCount||'3');
   const noPayTypes=['즉시할인','상품쿠폰','장바구니','무료배송','사용자기재'];
   const payTypes=['결제사_카카오페이','결제사_네이버페이','결제사_토스페이','결제사_오늘의집페이'];
@@ -767,6 +767,7 @@ function handleImgFileC(e,cid){
     const thumb=document.getElementById('imgThumbC_'+cid);const empty=document.getElementById('imgEmptyC_'+cid);
     if(thumb){thumb.src=ev.target.result;thumb.style.display='block';}if(empty)empty.style.display='none';
     const ctrl=document.getElementById('imgControlsC_'+cid);if(ctrl)ctrl.style.display='flex';
+    const _box=document.getElementById('imgBoxC_'+cid);const _ov=_box?_box.querySelector('.img-hover-overlay'):null;if(_ov)_ov.style.display='flex';
     renderPreview();};
   reader.readAsDataURL(file);e.target.value='';
 }
@@ -775,8 +776,9 @@ function handleImgUrlC(url,cid){
   card.data._img=url;card.data._imgX=0;card.data._imgY=0;card.data._imgScale=1;
   const thumb=document.getElementById('imgThumbC_'+cid);const empty=document.getElementById('imgEmptyC_'+cid);
   const ctrl=document.getElementById('imgControlsC_'+cid);
-  if(url){if(thumb){thumb.src=url;thumb.style.display='block';}if(empty)empty.style.display='none';if(ctrl)ctrl.style.display='flex';}
-  else{if(thumb){thumb.src='';thumb.style.display='none';}if(empty)empty.style.display='flex';if(ctrl)ctrl.style.display='none';}
+  const _box=document.getElementById('imgBoxC_'+cid);const _ov=_box?_box.querySelector('.img-hover-overlay'):null;
+  if(url){if(thumb){thumb.src=url;thumb.style.display='block';}if(empty)empty.style.display='none';if(ctrl)ctrl.style.display='flex';if(_ov)_ov.style.display='flex';}
+  else{if(thumb){thumb.src='';thumb.style.display='none';}if(empty)empty.style.display='flex';if(ctrl)ctrl.style.display='none';if(_ov)_ov.style.display='none';}
   renderPreview();
 }
 function resetImgC(cid){
@@ -847,6 +849,7 @@ function handleImgFileB(e,cid,num){
     const thumb=document.getElementById(thumbId);const empty=document.getElementById(emptyId);
     if(thumb){thumb.src=ev.target.result;thumb.style.display='block';}if(empty)empty.style.display='none';
     const ctrlId=num===1?'imgControlsB_'+cid:'imgControls2B_'+cid;const ctrl=document.getElementById(ctrlId);if(ctrl)ctrl.style.display='flex';
+    const _boxId=num===1?'imgBoxB_'+cid:'imgBox2B_'+cid;const _box=document.getElementById(_boxId);const _ov=_box?_box.querySelector('.img-hover-overlay'):null;if(_ov)_ov.style.display='flex';
     renderPreview();
   };
   reader.readAsDataURL(file);e.target.value='';
@@ -858,15 +861,18 @@ function handleImgUrlB(url,cid,num){
   const emptyId=num===1?'imgEmptyB_'+cid:'imgEmpty2B_'+cid;
   const thumb=document.getElementById(thumbId);const empty=document.getElementById(emptyId);
   const ctrl=document.getElementById(num===1?'imgControlsB_'+cid:'imgControls2B_'+cid);
+  const _boxId=num===1?'imgBoxB_'+cid:'imgBox2B_'+cid;const _box=document.getElementById(_boxId);const _ov=_box?_box.querySelector('.img-hover-overlay'):null;
   if(url){
     card.data[key]=url;
     if(thumb){thumb.src=url;thumb.style.display='block';}if(empty)empty.style.display='none';
     if(ctrl)ctrl.style.display='flex';
+    if(_ov)_ov.style.display='flex';
     renderPreview();
   }else{
     card.data[key]='';
     if(thumb){thumb.src='';thumb.style.display='none';}if(empty)empty.style.display='flex';
     if(ctrl)ctrl.style.display='none';
+    if(_ov)_ov.style.display='none';
     renderPreview();
   }
 }
@@ -1642,20 +1648,21 @@ function cardHTML(card){
         return`<div style="background:${bgColor};height:104px;display:flex;align-items:center;padding:0 40px;gap:8px;">${infoSvg}<span style="font-size:30px;font-weight:400;color:white;letter-spacing:-0.33px;flex:1;">${txt}</span></div>`;
       })();
       const badgeCount=d.badgeCount==='없음'?0:parseInt(d.badgeCount||'3');
+      const _badgeBg=d.darkImg?'#3F3F3F':'#2F2F2F';
       const mkBadge=(type,rate,line1,line2)=>{
         const _payC={'결제사_카카오페이':'#ffeb00','결제사_네이버페이':'#00DE5A','결제사_토스페이':'#3182F6','결제사_오늘의집페이':'#00A1FF'};
-        const isP=type&&type.startsWith('결제사_');const bg=isP?(_payC[type]||'#ffeb00'):'#2f2f2f';
+        const isP=type&&type.startsWith('결제사_');const bg=isP?(_payC[type]||'#ffeb00'):_badgeBg;
         const isWB=type==='결제사_토스페이'||type==='결제사_오늘의집페이';
         const rateTc=isP?(isWB?'#ffffff':'#2f2f2f'):'white';const rateFw=isP?(isWB?'500':'600'):'500';
         const nameTc=isP?(isWB?'rgba(255,255,255,0.6)':'rgba(47,47,47,0.7)'):'rgba(255,255,255,0.6)';
         const rawPn=isP?type.replace('결제사_',''):'';const payPn=isP?(rawPn.length>4?rawPn.replace('페이','<br>페이'):rawPn):'';
-        if(type==='무료배송')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:30px;text-align:center;"><span style="font-size:30px;font-weight:500;color:white;opacity:0.9;letter-spacing:-0.3px;">무료</span><span style="font-size:26px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:-0.26px;line-height:28px;">배송</span></div>`;
-        if(type==='사용자기재')return`<div style="width:160px;height:160px;border-radius:200px;background:#2f2f2f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:30px;text-align:center;"><span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line1||''}</span>${line2?`<span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line2}</span>`:''}</div>`;
+        if(type==='무료배송')return`<div style="width:160px;height:160px;border-radius:200px;background:${_badgeBg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:30px;text-align:center;"><span style="font-size:30px;font-weight:500;color:white;opacity:0.9;letter-spacing:-0.3px;">무료</span><span style="font-size:26px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:-0.26px;line-height:28px;">배송</span></div>`;
+        if(type==='사용자기재')return`<div style="width:160px;height:160px;border-radius:200px;background:${_badgeBg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:30px;text-align:center;"><span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line1||''}</span>${line2?`<span style="font-size:26px;font-weight:500;color:white;opacity:0.9;text-align:center;letter-spacing:-0.26px;line-height:1.2;">${line2}</span>`:''}</div>`;
         const _pad=(isP&&type!=='결제사_토스페이')?'30px':'25px 30px 30px';
         return`<div style="width:160px;height:160px;border-radius:200px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:${_pad};text-align:center;"><span style="font-size:30px;font-weight:${rateFw};color:${rateTc};opacity:0.9;letter-spacing:-0.3px;">${rate||''}</span><span style="font-size:26px;font-weight:400;color:${nameTc};letter-spacing:-0.26px;line-height:${isP?'29':'28'}px;">${isP?payPn:type}</span></div>`;
       };
       const badges=[];for(let i=1;i<=badgeCount;i++)badges.push(mkBadge(d[`badge${i}Type`],d[`badge${i}Rate`],d[`badge${i}Line1`],d[`badge${i}Line2`]));
-      const badgeHTML=badges.length?`<div style="position:absolute;top:${d.bannerType==='없음'?'30px':'134px'};right:30px;display:flex;flex-direction:column;gap:8px;z-index:3;">${badges.join('')}</div>`:'';
+      const badgeHTML=badges.length?`<div style="position:absolute;top:${d.bannerType==='없음'?'30px':'134px'};right:30px;display:flex;flex-direction:column;gap:10px;z-index:3;">${badges.join('')}</div>`:'';
       const noticeHTML=d.showNotice==='on'?`<div style="position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:26px;font-weight:300;color:rgba(255,255,255,0.7);letter-spacing:-0.26px;z-index:4;">${d.noticeText||'할인 혜택은 조기 종료될 수 있음'}</div>`:'';
       const dimHTML=d.showNotice==='on'?`<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 71%,rgba(0,0,0,0.3) 100%);pointer-events:none;z-index:1;"></div>`:'';
       return`<div style="width:750px;height:1000px;position:relative;overflow:hidden;font-family:'Pretendard',sans-serif;"><div style="position:absolute;inset:0;">${imgC}</div>${dimHTML}<div style="position:absolute;top:0;left:0;width:750px;z-index:2;">${bannerHTML}</div>${badgeHTML}${noticeHTML}</div>`;
