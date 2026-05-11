@@ -151,7 +151,47 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .card-wrap.active .card-render { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
 .card-render { width: 375px; height: 500px; border-radius: 0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); position: relative; background: white; flex-shrink: 0; }
 .card-inner { width: 750px; height: 1000px; transform-origin: top left; transform: scale(0.5); position: absolute; top: 0; left: 0; font-family: 'Pretendard', sans-serif; }
-.card-badge-row { display: flex; gap: 6px; align-items: center; }
+.card-badge-row { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+.card-download-btn {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-sub);
+  background: white;
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.card-download-btn:hover {
+  background: var(--y100);
+  border-color: var(--y300);
+  color: var(--text);
+}
+.dl-dropdown {
+  position: absolute;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 4px;
+  z-index: 9999;
+  min-width: 160px;
+  font-family: var(--font);
+}
+.dl-dropdown-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dl-dropdown-item:hover { background: var(--y100); }
+.dl-dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
 .card-order { font-size: 11px; font-weight: 600; color: var(--text-sub); background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
 .card-wrap.active .card-order { background: var(--y200); border: 1px solid var(--y300); color: var(--kakao-brown); font-weight: 700; }
 .type-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
@@ -212,6 +252,8 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 <div class="root">
@@ -261,8 +303,9 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
           <span class="spec-tag">750×1000px · 캐러셀</span>
         </div>
         <div class="preview-actions">
-          <button class="btn btn-ghost" onclick="exportPNG()">PNG 내보내기</button>
-          <button class="btn btn-primary" onclick="copyAll()">전체 복사</button>
+          <button class="btn btn-ghost" id="saveBtn" onclick="toggleSaveDropdown(event)">저장 ▾</button>
+          <button class="btn btn-ghost" id="fileBtn" onclick="toggleFileDropdown(event)">파일 ▾</button>
+          <button class="btn btn-primary" id="downloadAllBtn" onclick="toggleDownloadDropdown(event)">전체 다운로드 ▾</button>
         </div>
       </div>
       <div class="preview-scroll" id="previewArea">
@@ -1563,6 +1606,7 @@ function renderPreview(){
     const wrap=document.createElement('div');
     wrap.className='card-wrap'+(i===selectedIdx?' active':'');
     wrap.onclick=()=>selectCard(i);
+    wrap.dataset.cid = card.id;
     const renderDiv=document.createElement('div');
     renderDiv.className='card-render';
     renderDiv.style.position='relative';
@@ -1570,7 +1614,7 @@ function renderPreview(){
     wrap.appendChild(renderDiv);
     const badgeRow=document.createElement('div');
     badgeRow.className='card-badge-row';
-    badgeRow.innerHTML=`<div class="card-badge-wrap"><span class="card-num-pill">${i+1}</span><span class="card-text-pill"><span class="card-id-label">${t.id}</span><span class="card-dot">·</span><span class="card-name-label">${t.name}</span></span></div>`;
+    badgeRow.innerHTML=`<div class="card-badge-wrap"><span class="card-num-pill">${i+1}</span><span class="card-text-pill"><span class="card-id-label">${t.id}</span><span class="card-dot">·</span><span class="card-name-label">${t.name}</span></span></div><button class="card-download-btn" onclick="event.stopPropagation();downloadCard(${i})">다운로드</button>`;
     wrap.appendChild(badgeRow);
     area.appendChild(wrap);
   });
@@ -1762,8 +1806,508 @@ function loadCSV(e){
   r.readAsText(f,'UTF-8');e.target.value='';
 }
 function parseCSV(line){const r=[];let cur='',inQ=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){r.push(cur.trim());cur='';}else{cur+=c;}}r.push(cur.trim());return r;}
-function exportPNG(){alert('각 카드를 우클릭 → 이미지로 저장하세요.\n추후 자동 추출 기능이 추가될 예정입니다.');}
-function copyAll(){alert(`총 ${cards.length}장 구성되어 있습니다.`);}
+async function downloadCard(idx){
+  if(idx < 0 || idx >= cards.length) return;
+  const card = cards[idx];
+  const t = TEMPLATES.find(t => t.id === card.templateId);
+  const wrap = document.querySelector(`.card-wrap[data-cid="${card.id}"]`);
+  if(!wrap){ alert('카드를 찾을 수 없습니다.'); return; }
+  const inner = wrap.querySelector('.card-inner');
+  if(!inner){ alert('미리보기를 찾을 수 없습니다.'); return; }
+  const target = inner.firstElementChild;
+  if(!target){ alert('카드 내용을 찾을 수 없습니다.'); return; }
+
+  const origTransform = inner.style.transform;
+  const origPosition = inner.style.position;
+  const origLeft = inner.style.left;
+  const origTop = inner.style.top;
+  const origZIndex = inner.style.zIndex;
+
+  inner.style.transform = 'none';
+  inner.style.position = 'fixed';
+  inner.style.left = '-99999px';
+  inner.style.top = '0';
+  inner.style.zIndex = '-1';
+
+  try {
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+    const num = String(idx + 1).padStart(2, '0');
+    const filename = `${num}-${t.id}-${t.name}.jpg`;
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e){
+    console.error(e);
+    alert('이미지 생성 중 오류가 발생했습니다: ' + e.message);
+  } finally {
+    inner.style.transform = origTransform;
+    inner.style.position = origPosition;
+    inner.style.left = origLeft;
+    inner.style.top = origTop;
+    inner.style.zIndex = origZIndex;
+  }
+}
+
+async function downloadAllSeparate(){
+  for(let i = 0; i < cards.length; i++){
+    await downloadCard(i);
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
+async function downloadAllZip(){
+  if(typeof JSZip === 'undefined'){
+    alert('JSZip 라이브러리를 로드하지 못했습니다.');
+    return;
+  }
+  const zip = new JSZip();
+  for(let i = 0; i < cards.length; i++){
+    const card = cards[i];
+    const t = TEMPLATES.find(t => t.id === card.templateId);
+    const wrap = document.querySelector(`.card-wrap[data-cid="${card.id}"]`);
+    if(!wrap) continue;
+    const inner = wrap.querySelector('.card-inner');
+    if(!inner) continue;
+    const target = inner.firstElementChild;
+    if(!target) continue;
+
+    const origTransform = inner.style.transform;
+    const origPosition = inner.style.position;
+    const origLeft = inner.style.left;
+    const origTop = inner.style.top;
+    const origZIndex = inner.style.zIndex;
+
+    inner.style.transform = 'none';
+    inner.style.position = 'fixed';
+    inner.style.left = '-99999px';
+    inner.style.top = '0';
+    inner.style.zIndex = '-1';
+
+    try {
+      const canvas = await html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+      const num = String(i + 1).padStart(2, '0');
+      zip.file(`${num}-${t.id}-${t.name}.jpg`, blob);
+    } catch(e){
+      console.error(`카드 ${i+1} 캡처 실패:`, e);
+    } finally {
+      inner.style.transform = origTransform;
+      inner.style.position = origPosition;
+      inner.style.left = origLeft;
+      inner.style.top = origTop;
+      inner.style.zIndex = origZIndex;
+    }
+  }
+
+  const zipBlob = await zip.generateAsync({type: 'blob'});
+  if(zipBlob.size < 100){
+    alert('ZIP 파일 생성에 실패했습니다. 콘솔을 확인해 주세요.');
+    return;
+  }
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `카카오캐러셀_${cards.length}장.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================
+// JSON 파일 내보내기/가져오기
+// ============================================
+
+let currentWorkName = null;
+
+function exportJSON(){
+  if(cards.length === 0){
+    alert('내보낼 카드가 없습니다.');
+    return;
+  }
+
+  const data = {
+    version: '1.0',
+    type: 'kakao-carousel',
+    exportedAt: new Date().toISOString(),
+    cards: cards,
+    uid: uid
+  };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const baseName = currentWorkName || `${today}_캐러셀`;
+  const filename = `${baseName}.json`;
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json,.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+
+        if(!data.cards || !Array.isArray(data.cards)){
+          alert('올바른 캐러셀 작업물 파일이 아닙니다.');
+          return;
+        }
+
+        if(cards.length > 0){
+          if(!confirm('현재 작업물이 사라집니다. 불러오시겠어요?')) return;
+        }
+
+        cards = data.cards;
+        if(data.uid) uid = data.uid;
+        currentWorkName = file.name.replace(/\.json$/i, '');
+        selectedIdx = cards.length > 0 ? 0 : -1;
+        renderAll();
+        if(selectedIdx >= 0) renderEditor();
+        alert(`"${currentWorkName}" 가져오기 완료!`);
+      } catch(err){
+        alert('JSON 파일을 읽는 중 오류: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ============================================
+// Google Sheets 저장/불러오기 (Apps Script API)
+// ============================================
+
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/bucketplace.net/s/AKfycbzwS1UMobcTMVq2MBrGH5CI-cRf9XZn-gt2p0VOmoaIXLhi8AQBYlaNxvyohwqgdiNz4Q/exec';
+
+let currentWorkId = null;
+
+async function saveToSheet(name){
+  if(!name || !name.trim()){
+    alert('작업명을 입력해 주세요.');
+    return null;
+  }
+
+  if(cards.length === 0){
+    alert('저장할 카드가 없습니다.');
+    return null;
+  }
+
+  const body = {
+    action: 'save',
+    id: currentWorkId,
+    name: name.trim(),
+    cardCount: cards.length,
+    data: { cards: cards, uid: uid }
+  };
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const result = await res.json();
+
+    if(result.ok){
+      currentWorkId = result.id;
+      currentWorkName = result.name;
+      return result;
+    } else {
+      throw new Error(result.error || '저장 실패');
+    }
+  } catch(e){
+    console.error('저장 오류:', e);
+    alert('저장 중 오류: ' + e.message);
+    return null;
+  }
+}
+
+async function listFromSheet(){
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=list');
+    const result = await res.json();
+    if(result.ok) return result.items;
+    throw new Error(result.error);
+  } catch(e){
+    console.error('목록 조회 오류:', e);
+    alert('목록을 가져오지 못했습니다: ' + e.message);
+    return [];
+  }
+}
+
+async function loadFromSheet(id){
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=load&id=' + encodeURIComponent(id));
+    const result = await res.json();
+
+    if(result.ok && result.item){
+      const item = result.item;
+      if(item.data && item.data.cards){
+        cards = item.data.cards;
+        if(item.data.uid) uid = item.data.uid;
+        currentWorkId = item.id;
+        currentWorkName = item.name;
+        selectedIdx = cards.length > 0 ? 0 : -1;
+        renderAll();
+        if(selectedIdx >= 0) renderEditor();
+        return true;
+      }
+    } else {
+      throw new Error(result.error);
+    }
+  } catch(e){
+    console.error('불러오기 오류:', e);
+    alert('불러오기 중 오류: ' + e.message);
+  }
+  return false;
+}
+
+async function deleteFromSheet(id){
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete', id: id }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const result = await res.json();
+    return result.ok;
+  } catch(e){
+    console.error('삭제 오류:', e);
+    return false;
+  }
+}
+
+function toggleSaveDropdown(e){
+  e.stopPropagation();
+  const existing = document.getElementById('saveDropdown');
+  if(existing){ existing.remove(); return; }
+
+  ['dlDropdown', 'fileDropdown'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.remove();
+  });
+
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'saveDropdown';
+  menu.className = 'dl-dropdown';
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+
+  const saveText = currentWorkName
+    ? `현재 작업 저장 (${currentWorkName})`
+    : '현재 작업 저장';
+
+  menu.innerHTML = `
+    <div class="dl-dropdown-item" onclick="document.getElementById('saveDropdown').remove();_promptSaveSheet()">${saveText}</div>
+    <div class="dl-dropdown-divider"></div>
+    <div class="dl-dropdown-item" onclick="document.getElementById('saveDropdown').remove();openSheetListModal()">저장 목록 불러오기</div>
+  `;
+  document.body.appendChild(menu);
+
+  setTimeout(() => {
+    document.addEventListener('click', function close(){
+      const m = document.getElementById('saveDropdown');
+      if(m) m.remove();
+      document.removeEventListener('click', close);
+    }, {once: true});
+  }, 0);
+}
+
+async function _promptSaveSheet(){
+  if(cards.length === 0){
+    alert('저장할 카드가 없습니다.');
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const defaultName = currentWorkName || `${today}_캐러셀`;
+  const name = prompt('작업명을 입력해주세요:', defaultName);
+  if(name === null) return;
+
+  const result = await saveToSheet(name);
+  if(result){
+    alert(`"${result.name}" 저장 완료! (작업ID: ${result.id})`);
+  }
+}
+
+async function openSheetListModal(){
+  const existing = document.getElementById('sheetListModal');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'sheetListModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:14px;width:600px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h3 style="margin:0;font-size:16px;font-weight:600;">저장된 작업물</h3>
+          <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">Google Sheets에서 가져옵니다.</div>
+        </div>
+        <button onclick="document.getElementById('sheetListModal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-sub);">×</button>
+      </div>
+      <div id="sheetListBody" style="overflow-y:auto;padding:8px;flex:1;">
+        <div style="padding:40px;text-align:center;color:var(--text-sub);font-size:13px;">불러오는 중...</div>
+      </div>
+    </div>
+  `;
+
+  overlay.addEventListener('click', e => {
+    if(e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+
+  const items = await listFromSheet();
+  const body = document.getElementById('sheetListBody');
+  if(!body) return;
+
+  if(items.length === 0){
+    body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-sub);font-size:13px;">저장된 작업물이 없습니다.</div>';
+    return;
+  }
+
+  body.innerHTML = items.map(item => {
+    const date = item.modifiedAt ? new Date(item.modifiedAt) : null;
+    const dateStr = date ? `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}` : '';
+    const author = item.author || '';
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--y100)'" onmouseout="this.style.background=''">
+        <div style="flex:1;cursor:pointer;" onclick="_handleSheetLoad('${item.id}')">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${item.name || '(제목 없음)'}</div>
+          <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">${item.id} · ${author} · ${dateStr} · ${item.cardCount || 0}장</div>
+        </div>
+        <button onclick="event.stopPropagation();_handleSheetDelete('${item.id}','${(item.name||'').replace(/'/g,"\\\\\\'")}')" style="background:none;border:none;color:var(--text-hint);cursor:pointer;font-size:18px;padding:4px 8px;border-radius:4px;" onmouseover="this.style.color='#E53E3E';this.style.background='#FFF0F0'" onmouseout="this.style.color='var(--text-hint)';this.style.background='none'" title="삭제">×</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function _handleSheetLoad(id){
+  if(cards.length > 0){
+    if(!confirm('현재 작업물이 사라집니다. 불러오시겠어요?')) return;
+  }
+  const ok = await loadFromSheet(id);
+  if(ok){
+    document.getElementById('sheetListModal').remove();
+    alert(`"${currentWorkName}" 불러오기 완료!`);
+  }
+}
+
+async function _handleSheetDelete(id, name){
+  if(!confirm(`"${name}" 작업물을 삭제할까요? 되돌릴 수 없어요.`)) return;
+  const ok = await deleteFromSheet(id);
+  if(ok){
+    if(currentWorkId === id){
+      currentWorkId = null;
+      currentWorkName = null;
+    }
+    openSheetListModal();
+  } else {
+    alert('삭제 실패');
+  }
+}
+
+function toggleFileDropdown(e){
+  e.stopPropagation();
+  const existing = document.getElementById('fileDropdown');
+  if(existing){ existing.remove(); return; }
+
+  const dlMenu = document.getElementById('dlDropdown');
+  if(dlMenu) dlMenu.remove();
+
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'fileDropdown';
+  menu.className = 'dl-dropdown';
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+  menu.innerHTML = `
+    <div class="dl-dropdown-item" onclick="document.getElementById('fileDropdown').remove();exportJSON()">JSON 내보내기</div>
+    <div class="dl-dropdown-divider"></div>
+    <div class="dl-dropdown-item" onclick="document.getElementById('fileDropdown').remove();importJSON()">JSON 가져오기</div>
+  `;
+  document.body.appendChild(menu);
+
+  setTimeout(() => {
+    document.addEventListener('click', function close(){
+      const m = document.getElementById('fileDropdown');
+      if(m) m.remove();
+      document.removeEventListener('click', close);
+    }, {once: true});
+  }, 0);
+}
+
+function toggleDownloadDropdown(e){
+  e.stopPropagation();
+  const existing = document.getElementById('dlDropdown');
+  if(existing){ existing.remove(); return; }
+  if(cards.length === 0){ alert('카드가 없습니다.'); return; }
+
+  const btn = document.getElementById('downloadAllBtn');
+  const rect = btn.getBoundingClientRect();
+  const dd = document.createElement('div');
+  dd.id = 'dlDropdown';
+  dd.className = 'dl-dropdown';
+  dd.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  dd.style.left = (rect.right + window.scrollX - 160) + 'px';
+  dd.innerHTML = `
+    <div class="dl-dropdown-item" data-act="separate">개별 파일로 다운로드</div>
+    <div class="dl-dropdown-divider"></div>
+    <div class="dl-dropdown-item" data-act="zip">ZIP으로 다운로드</div>
+  `;
+  document.body.appendChild(dd);
+
+  dd.addEventListener('click', (ev) => {
+    const item = ev.target.closest('.dl-dropdown-item');
+    if(!item) return;
+    const act = item.dataset.act;
+    dd.remove();
+    if(act === 'separate') downloadAllSeparate();
+    else if(act === 'zip') downloadAllZip();
+  });
+
+  setTimeout(() => {
+    document.addEventListener('click', function closeDD(){
+      const cur = document.getElementById('dlDropdown');
+      if(cur) cur.remove();
+      document.removeEventListener('click', closeDD);
+    }, { once: true });
+  }, 0);
+}
 
 initModal();
 const e1={id:++uid,templateId:'A',type:'cover',data:{...TEMPLATES.find(t=>t.id==='A').def}};
